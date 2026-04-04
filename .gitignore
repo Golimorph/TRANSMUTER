@@ -1,1 +1,13 @@
 transmuter
+
+*.o
+*.a
+*.so
+*.out
+**/*.o
+sw/*.o
+
+.vscode/
+.idea/
+.DS_Store
+build/*

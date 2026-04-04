@@ -51,6 +51,9 @@ docs:
 	@chmod +x docs/generate_doc_tree.sh
 	@./docs/generate_doc_tree.sh
 
+run: $(TARGET)
+	./$(TARGET)
+
 # Cleanup
 clean:
 	rm -f $(OBJS) $(TARGET)
