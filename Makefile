@@ -5,6 +5,7 @@ CXX = g++
 INC = -I/usr/include/eigen3 \
       -I./sw/core/inc \
       -I./sw/geometry/inc \
+	  -I./sw/geometry/shapes/inc \
       -I./sw/pathgen/inc \
       -I./sw/rendering/inc \
       -I./sw/visualization/inc
@@ -13,6 +14,7 @@ INC = -I/usr/include/eigen3 \
 SRCS = sw/main.cc \
        $(wildcard sw/core/src/*.cc) \
        $(wildcard sw/geometry/src/*.cc) \
+	   $(wildcard sw/geometry/shapes/src/*.cc) \
        $(wildcard sw/pathgen/src/*.cc) \
        $(wildcard sw/visualization/src/*.cc)
 
