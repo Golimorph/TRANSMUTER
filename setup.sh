@@ -18,4 +18,8 @@ sudo apt install -y libeigen3-dev
 # 4. Install Graphics Suite (OpenGL, GLU, GLEW, GLFW)
 sudo apt install -y libgl1-mesa-dev libglu1-mesa-dev libglew-dev libglfw3-dev mesa-utils
 
+# 5. Install tree for the documentation generator (see docs)
+sudo apt install tree
+
+
 echo "--- Setup Complete. ---"
