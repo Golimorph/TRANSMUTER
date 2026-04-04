@@ -1,0 +1,27 @@
+The Transmuter. 
+
+The Transmuter is a software built for translating stl files into 5 axis tool paths for 
+older CNC converted machines that have lead-screw backlash. 
+
+The main purpose of this software is to generate g-code tool paths that respect the cutting
+forces from the spindle so that traditional lead screws will always be pre-loaded and backlash
+can be ignored. 
+
+Ideally you will want to have a machine with DRO (digital read outs) on all axes since the 
+software can then continually map the precision erros in the lead screws. But If you do not
+have this the backlash can still be handled as a constant offset.
+
+
+Install libraries: 
+    setup.sh
+
+Compile: 
+    Make
+
+Run 
+    ./transmuter
+
+
+
+
+  
