@@ -1,9 +1,12 @@
 #include "visualizer.h"
 
 #include <GL/glu.h>
+#include <GLFW/glfw3.h>
 
 #include <cmath>
-#include <iostream>
+#include <string>
+
+#include "trace.h"
 
 namespace transmuter::visualization
 {
@@ -13,31 +16,28 @@ Visualizer::Visualizer(int width, int height, const std::string& title)
 {
     if (!glfwInit())
     {
-        std::cerr << "CRITICAL: GLFW initialization failed." << std::endl;
-        return;
+        SHUTDOWN_ERROR("GLFW initialization failed.");
     }
+
+    // Set hints for a stable legacy context if needed
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
 
     m_window = glfwCreateWindow(width, height, title.c_str(), NULL, NULL);
     if (!m_window)
     {
-        std::cerr << "CRITICAL: Failed to create GLFW window." << std::endl;
         glfwTerminate();
-        return;
+        SHUTDOWN_ERROR("Failed to create GLFW window.");
     }
 
     glfwMakeContextCurrent(m_window);
 
-    // glewExperimental is often needed for modern OpenGL features
-    glewExperimental = GL_TRUE;
-    if (glewInit() != GLEW_OK)
-    {
-        std::cerr << "CRITICAL: GLEW initialization failed." << std::endl;
-        return;
-    }
-
     // Industrial "Studio Gray" background
     glClearColor(0.12f, 0.12f, 0.14f, 1.0f);
     glEnable(GL_DEPTH_TEST);
+
+    INFO("Visualizer: OpenGL Legacy Pipeline initialized (" + std::to_string(width) + "x" +
+         std::to_string(height) + ")");
 }
 
 Visualizer::~Visualizer()
@@ -45,6 +45,7 @@ Visualizer::~Visualizer()
     if (m_window)
     {
         glfwDestroyWindow(m_window);
+        INFO("Visualizer: Window destroyed.");
     }
     glfwTerminate();
 }
@@ -88,8 +89,8 @@ void Visualizer::drawPointCloud(const geometry::PointCloud& cloud, float rotatio
     glBegin(GL_POINTS);
     for (const auto& v : cloud.getVertices())
     {
+        // Absolute value of normals maps well to RGB for visual debugging
         glColor3f(std::abs(v.normal.x()), std::abs(v.normal.y()), std::abs(v.normal.z()));
-
         glVertex3f(v.pos.x(), v.pos.y(), v.pos.z());
     }
     glEnd();
