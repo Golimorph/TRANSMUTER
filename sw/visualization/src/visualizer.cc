@@ -11,40 +11,38 @@ Visualizer::Visualizer(int w, int h, const std::string& title) : m_renderer(w, h
 }
 
 void Visualizer::showMillingScene(const geometry::PointCloud& part,
-                                  const geometry::PointCloud& path)
+                                  const geometry::PointCloud& path,
+                                  const geometry::PointCloud& tool)
 {
-    if (part.size() == 0 && path.size() == 0)
-    {
-        SHUTDOWN_ERROR("Visualizer: Scene started with zero data points.");
-    }
-
+    size_t currentStep = 0;
     float rotation = 0.0f;
-    INFO("Visualizer: Entering scene loop. Part: " + std::to_string(part.size()) +
-         " pts | Path: " + std::to_string(path.size()) + " pts");
+
+    INFO("Visualizer: Starting Animated Scene.");
 
     while (!m_renderer.shouldClose())
     {
         m_renderer.beginFrame();
 
-        // Layer 1: The Part (Geometry)
-        if (part.size() > 0)
-        {
-            m_renderer.drawPointCloud(part, rotation);
-        }
+        // 1. Static Workpiece
+        m_renderer.drawPointCloud(part, rotation);
 
-        // Layer 2: The Toolpath (Kinematics)
+        // 2. Full Toolpath (The "Ghost" trace)
+        m_renderer.drawToolPath(path, rotation);
+
+        // 3. Dynamic Tool (The "Actor")
         if (path.size() > 0)
         {
-            m_renderer.drawToolPath(path, rotation);
+            const auto& node = path.getVertices()[currentStep];
+            // We pass the tool model and the current node's transform
+            m_renderer.drawTool(tool, node.pos, node.normal, rotation);
+
+            // Advance to next G-code line (looping back at the end)
+            currentStep = (currentStep + 1) % path.size();
         }
 
         rotation += 0.15f;
-        if (rotation >= 360.0f) rotation -= 360.0f;
-
         m_renderer.endFrame();
     }
-
-    INFO("Visualizer: Scene loop terminated.");
 }
 
 }  // namespace transmuter::visualization

@@ -145,6 +145,40 @@ void Renderer::drawToolPath(const geometry::PointCloud& path, float rotation)
     glPopMatrix();
 }
 
+void Renderer::drawTool(const geometry::PointCloud& toolModel, const Eigen::Vector3f& pos,
+                        const Eigen::Vector3f& normal, float rotationAngle)
+{
+    glPushMatrix();
+
+    // --- 1. Global Scene Rotation ---
+    // This keeps the tool synchronized with the spinning workpiece
+    glRotatef(rotationAngle, 0.0f, 1.0f, 0.0f);
+
+    // --- 2. Translation to Toolpath Position ---
+    glTranslatef(pos.x(), pos.y(), pos.z());
+
+    // --- 3. 5-Axis Kinematic Alignment ---
+    // We calculate the rotation from the default Z-axis to the target normal
+    Eigen::Vector3f zAxis(0.0f, 0.0f, 1.0f);
+    auto quaternion = Eigen::Quaternionf::FromTwoVectors(zAxis, normal.normalized());
+    Eigen::AngleAxisf angleAxis(quaternion);
+
+    // Apply the rotation using OpenGL (converting radians to degrees)
+    glRotatef(angleAxis.angle() * 180.0f / M_PI, angleAxis.axis().x(), angleAxis.axis().y(),
+              angleAxis.axis().z());
+
+    // --- 4. Draw the Tool Point Cloud ---
+    glBegin(GL_POINTS);
+    glColor3f(1.0f, 0.3f, 0.3f);  // "Safety Red" for the endmill
+    for (const auto& v : toolModel.getVertices())
+    {
+        glVertex3f(v.pos.x(), v.pos.y(), v.pos.z());
+    }
+    glEnd();
+
+    glPopMatrix();
+}
+
 void Renderer::endFrame()
 {
     if (!m_window) return;

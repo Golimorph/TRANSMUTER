@@ -20,7 +20,8 @@ class Visualizer
      * @brief Displays the static part and the moving toolpath.
      * Blocks until the window is closed.
      */
-    void showMillingScene(const geometry::PointCloud& part, const geometry::PointCloud& path);
+    void showMillingScene(const geometry::PointCloud& part, const geometry::PointCloud& path,
+                          const geometry::PointCloud& tool);
 
    private:
     Renderer m_renderer;

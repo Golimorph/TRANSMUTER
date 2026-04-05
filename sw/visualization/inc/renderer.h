@@ -52,6 +52,9 @@ class Renderer
 
     void drawToolPath(const geometry::PointCloud& path, float rotation);
 
+    void drawTool(const geometry::PointCloud& toolModel, const Eigen::Vector3f& pos,
+                  const Eigen::Vector3f& normal, float rotationAngle);
+
     /**
      * @brief Finalizes the frame.
      * Swaps the front and back buffers and polls for window events.
