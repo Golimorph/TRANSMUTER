@@ -18,30 +18,30 @@ find "$SW_ROOT" -type d | while read -r dir; do
 done
 
 # 2. Generate the tree and annotate it line-by-line
-# We use tree -df to get full paths for matching, then strip them back for beauty
-# We also prepend 4 spaces to every line for indentation
-ANNOTATED_TREE=$(tree -df "$SW_ROOT" | grep -v 'directories' | while read -r line; do
-    # Extract the full path from the tree line (the part that looks like sw/core/inc)
-    FULL_PATH=$(echo "$line" | grep -o "$SW_ROOT/[^ ]*")
+# Use IFS= to prevent 'read' from stripping leading spaces
+ANNOTATED_TREE=$(tree -df "$SW_ROOT" | grep -v 'directories' | while IFS= read -r line; do
+    # Extract the path (anything starting with sw/)
+    FULL_PATH=$(echo "$line" | grep -o "$SW_ROOT[^ ]*")
     
-    # If we found a path, check our map for a summary
     if [ -n "$FULL_PATH" ]; then
+        # Look up the summary in our temp map
         SUMMARY=$(grep "^$FULL_PATH|" "$TEMP_MAP" | cut -d'|' -f2)
-        # Strip the full path from the line to keep the ASCII tree pretty
-        CLEAN_LINE=$(echo "$line" | sed "s|$FULL_PATH|$(basename "$FULL_PATH")|")
+        
+        # This is the trick: Swap the full path for the basename 
+        # WITHOUT losing the leading ASCII characters from 'tree'
+        # We use ${line%%$FULL_PATH*} to keep everything BEFORE the path
+        PREFIX="${line%%$FULL_PATH*}"
+        BASE=$(basename "$FULL_PATH")
         
         if [ -n "$SUMMARY" ]; then
-            RESULT_LINE="$CLEAN_LINE  # $SUMMARY"
+            echo "    $PREFIX$BASE  # $SUMMARY"
         else
-            RESULT_LINE="$CLEAN_LINE"
+            echo "    $PREFIX$BASE"
         fi
     else
-        # This handles the root "sw" line
-        RESULT_LINE="$line"
+        # Handle the root 'sw' line or lines without paths
+        echo "    $line"
     fi
-    
-    # Indent the line by 4 spaces
-    echo "    $RESULT_LINE"
 done)
 
 # 3. Final Formatting & Replacement
