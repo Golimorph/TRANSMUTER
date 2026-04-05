@@ -3,6 +3,7 @@
 
 #include "box.h"
 #include "pointCloud.h"
+#include "trace.h"
 #include "visualizer.h"
 
 /**
@@ -26,8 +27,8 @@ int main()
     Eigen::Vector3f cubeDims(100.0f, 100.0f, 100.0f);
     PointCloud workPiece = shapes::Box::generate(cubeDims, 5.0f);
 
-    std::cout << "Bernardo Engine: Initialized with " << workPiece.size() << " surface points."
-              << std::endl;
+    INFO("Bernardo Engine: Initialized with " + std::to_string(workPiece.size()) +
+         " surface points.");
 
     float rotationAngle = 0.0f;
 

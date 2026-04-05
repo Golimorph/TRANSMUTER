@@ -1,1 +1,1 @@
-# Geometry: STL Parser & Point Cloud Engine
+STL Parser & Point Cloud Engine

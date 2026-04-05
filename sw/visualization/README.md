@@ -1,1 +1,1 @@
-Rendering: Visualize the tool paths and the cutting procedure graphically 
+Visualize the tool paths and the cutting procedure graphically 

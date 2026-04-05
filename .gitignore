@@ -11,3 +11,5 @@ sw/*.o
 .idea/
 .DS_Store
 build/*
+
+log.txt

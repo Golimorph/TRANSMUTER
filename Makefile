@@ -8,7 +8,8 @@ INC = -I/usr/include/eigen3 \
 	  -I./sw/geometry/shapes/inc \
       -I./sw/pathgen/inc \
       -I./sw/rendering/inc \
-      -I./sw/visualization/inc
+      -I./sw/visualization/inc \
+	  -I./sw/utils/inc
 
 # Source files
 SRCS = sw/main.cc \
