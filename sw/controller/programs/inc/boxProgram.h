@@ -9,11 +9,11 @@
 namespace transmuter::controller::programs
 {
 
-class BoxMilling : public ProgramIf
+class BoxProgram : public ProgramIf
 {
    public:
-    BoxMilling() = default;
-    ~BoxMilling() override = default;
+    BoxProgram() = default;
+    ~BoxProgram() override = default;
 
     // The logic that runs in the background thread
     void execute() override;

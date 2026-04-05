@@ -1,4 +1,4 @@
-#include "boxMilling.h"
+#include "boxProgram.h"
 
 #include "box.h"
 #include "visualizer.h"
@@ -6,13 +6,13 @@
 namespace transmuter::controller::programs
 {
 
-void BoxMilling::execute()
+void BoxProgram::execute()
 {
     using namespace transmuter::geometry;
     using namespace transmuter::visualization;
 
     // 1. Local Service Setup
-    Visualizer viz(1024, 768, "Bernardo: Box Milling Program");
+    Visualizer viz(1024, 768, "Bernardo: BoxProgram Milling Program");
 
     // 2. Geometry Generation
     Eigen::Vector3f dims(100.0f, 100.0f, 100.0f);
