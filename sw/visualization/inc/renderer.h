@@ -50,6 +50,8 @@ class Renderer
      */
     void drawPointCloud(const geometry::PointCloud& cloud, float rotationAngle);
 
+    void drawToolPath(const geometry::PointCloud& path, float rotation);
+
     /**
      * @brief Finalizes the frame.
      * Swaps the front and back buffers and polls for window events.

@@ -1,3 +1,4 @@
+#include "boxMilling.h"
 #include "boxProgram.h"
 #include "programManager.h"
 #include "trace.h"
@@ -5,7 +6,8 @@
 transmuter::controller::ProgramManager createProgramManager()
 {
     transmuter::controller::ProgramManager programManager;
-    programManager.add<transmuter::controller::programs::BoxProgram>("box");
+    programManager.add<transmuter::controller::programs::BoxProgram>("boxProgram");
+    programManager.add<transmuter::controller::programs::BoxMilling>("boxMilling");
     return programManager;
 }
 

@@ -113,6 +113,38 @@ void Renderer::drawPointCloud(const geometry::PointCloud& cloud, float rotationA
     glPopMatrix();
 }
 
+void Renderer::drawToolPath(const geometry::PointCloud& path, float rotation)
+{
+    glPushMatrix();
+    glRotatef(rotation, 0.0f, 1.0f, 0.0f);
+
+    const auto& nodes = path.getVertices();
+
+    // 1. Draw the connection lines (The "Trace")
+    glBegin(GL_LINE_STRIP);
+    glColor3f(0.0f, 1.0f, 0.0f);  // Bright green for the path
+    for (const auto& v : nodes)
+    {
+        glVertex3f(v.pos.x(), v.pos.y(), v.pos.z());
+    }
+    glEnd();
+
+    // 2. Draw the orientation needles (The 5-Axis "IJK" vectors)
+    glBegin(GL_LINES);
+    glColor3f(1.0f, 0.5f, 0.0f);  // Orange for tool orientation
+    for (const auto& v : nodes)
+    {
+        // Base of the tool
+        glVertex3f(v.pos.x(), v.pos.y(), v.pos.z());
+        // Tip of the "needle" showing where the tool points
+        glVertex3f(v.pos.x() + v.normal.x() * 15.0f, v.pos.y() + v.normal.y() * 15.0f,
+                   v.pos.z() + v.normal.z() * 15.0f);
+    }
+    glEnd();
+
+    glPopMatrix();
+}
+
 void Renderer::endFrame()
 {
     if (!m_window) return;
