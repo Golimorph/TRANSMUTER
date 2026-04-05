@@ -1,4 +1,4 @@
-#include "visualizer.h"
+#include "renderer.h"
 
 #include <GL/glu.h>
 #include <GLFW/glfw3.h>
@@ -11,7 +11,7 @@
 namespace transmuter::visualization
 {
 
-Visualizer::Visualizer(int width, int height, const std::string& title)
+Renderer::Renderer(int width, int height, const std::string& title)
     : m_window(nullptr), m_width(width), m_height(height)
 {
     if (!glfwInit())
@@ -36,26 +36,26 @@ Visualizer::Visualizer(int width, int height, const std::string& title)
     glClearColor(0.12f, 0.12f, 0.14f, 1.0f);
     glEnable(GL_DEPTH_TEST);
 
-    INFO("Visualizer: OpenGL Legacy Pipeline initialized (" + std::to_string(width) + "x" +
+    INFO("Renderer: OpenGL Legacy Pipeline initialized (" + std::to_string(width) + "x" +
          std::to_string(height) + ")");
 }
 
-Visualizer::~Visualizer()
+Renderer::~Renderer()
 {
     if (m_window)
     {
         glfwDestroyWindow(m_window);
-        INFO("Visualizer: Window destroyed.");
+        INFO("Renderer: Window destroyed.");
     }
     glfwTerminate();
 }
 
-bool Visualizer::shouldClose() const
+bool Renderer::shouldClose() const
 {
     return m_window ? glfwWindowShouldClose(m_window) : true;
 }
 
-void Visualizer::beginFrame()
+void Renderer::beginFrame()
 {
     if (!m_window) return;
 
@@ -78,7 +78,7 @@ void Visualizer::beginFrame()
     gluLookAt(200.0, 150.0, 200.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 }
 
-void Visualizer::drawPointCloud(const geometry::PointCloud& cloud, float rotationAngle)
+void Renderer::drawPointCloud(const geometry::PointCloud& cloud, float rotationAngle)
 {
     glPushMatrix();
     glRotatef(rotationAngle, 0, 1, 0);
@@ -113,7 +113,7 @@ void Visualizer::drawPointCloud(const geometry::PointCloud& cloud, float rotatio
     glPopMatrix();
 }
 
-void Visualizer::endFrame()
+void Renderer::endFrame()
 {
     if (!m_window) return;
     glfwSwapBuffers(m_window);

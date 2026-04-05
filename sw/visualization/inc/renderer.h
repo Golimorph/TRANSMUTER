@@ -1,5 +1,5 @@
-#ifndef TRANSMUTER_VISUALIZATION_VISUALIZER_H
-#define TRANSMUTER_VISUALIZATION_VISUALIZER_H
+#ifndef TRANSMUTER_VISUALIZATION_RENDERER_H
+#define TRANSMUTER_VISUALIZATION_RENDERER_H
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -12,26 +12,25 @@ namespace transmuter::visualization
 {
 
 /**
- * @brief The Industrial Visualizer for the Transmuter project.
- * * This class encapsulates the GLFW window lifecycle and OpenGL
+ * @brief This class encapsulates the GLFW window lifecycle and OpenGL
  * rendering pipeline. It allows the core logic to visualize
  * point clouds and toolpaths without exposing raw GL calls
  * to the rest of the system.
  */
-class Visualizer
+class Renderer
 {
    public:
     /**
-     * @brief Construct a new Visualizer object.
+     * @brief Construct a new Renderer object.
      * Initializes GLFW and creates an OpenGL context.
      */
-    Visualizer(int width, int height, const std::string& title);
+    Renderer(int width, int height, const std::string& title);
 
     /**
-     * @brief Destroy the Visualizer object.
+     * @brief Destroy the Renderer object.
      * Cleans up resources and terminates the GLFW context.
      */
-    ~Visualizer();
+    ~Renderer();
 
     /**
      * @brief Checks if the user has requested to close the window.

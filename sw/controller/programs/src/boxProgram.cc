@@ -1,7 +1,7 @@
 #include "boxProgram.h"
 
 #include "box.h"
-#include "visualizer.h"
+#include "renderer.h"
 
 namespace transmuter::controller::programs
 {
@@ -12,7 +12,7 @@ void BoxProgram::execute()
     using namespace transmuter::visualization;
 
     // 1. Local Service Setup
-    Visualizer viz(1024, 768, "Bernardo: BoxProgram Milling Program");
+    Renderer viz(1024, 768, "Bernardo: BoxProgram Milling Program");
 
     // 2. Geometry Generation
     Eigen::Vector3f dims(100.0f, 100.0f, 100.0f);
