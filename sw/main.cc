@@ -1,16 +1,28 @@
 #include "boxMilling.h"
-#include "controller.h"
+#include "programManager.h"
+#include "trace.h"
 
-int main()
+transmuter::controller::ProgramManager createProgramManager()
 {
-    // 1. Setup the Controller
-    transmuter::controller::Controller bernardo;
+    transmuter::controller::ProgramManager programManager;
+    programManager.add<transmuter::controller::programs::BoxMilling>("box");
+    return programManager;
+}
 
-    // 2. Register the programs
-    bernardo.add<transmuter::controller::programs::BoxMilling>("box");
+int main(int argc, char* argv[])
+{
+    if (argc < 2)
+    {
+        SHUTDOWN_ERROR(
+            "Usage: ./transmuter <program_name>\nExample: ./transmuter box , where 'box' is the "
+            "name of the program to run.");
+    }
+    std::string requestedProgram = argv[1];
 
-    // 3. Run the selected logic
-    // This calls boxMilling->execute(), which takes over the process
-    bernardo.run("box");
+    transmuter::controller::ProgramManager programManager = createProgramManager();
+
+    INFO("Launcher: Attempting to run program '" + requestedProgram + "'...");
+    programManager.run(requestedProgram);
+
     return 0;
 }

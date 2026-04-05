@@ -56,7 +56,7 @@ docs:
 	@./docs/generate_doc_tree.sh
 
 run: $(TARGET)
-	./$(TARGET)
+	./$(TARGET) box
 
 # Cleanup
 clean:

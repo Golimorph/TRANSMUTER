@@ -1,5 +1,5 @@
-#ifndef TRANSMUTER_CONTROLLER_H
-#define TRANSMUTER_CONTROLLER_H
+#ifndef TRANSMUTER_ProgramManager_H
+#define TRANSMUTER_ProgramManager_H
 
 #include <functional>
 #include <map>
@@ -13,7 +13,7 @@ namespace transmuter::controller
 {
 
 /**
- * @brief The Controller class manages the registration and execution of programs.
+ * @brief The ProgramManager class manages the registration and execution of programs.
  *
  * It maintains a catalog of program factories, allowing for dynamic instantiation
  * and execution of registered programs based on their string identifiers.
@@ -21,7 +21,7 @@ namespace transmuter::controller
  * so that we only create instances of the programs when they are actually needed, rather than at
  * startup.
  */
-class Controller
+class ProgramManager
 {
    public:
     using ProgramFactory = std::function<std::unique_ptr<programs::ProgramIf>()>;
@@ -37,13 +37,13 @@ class Controller
     {
         if (m_catalog.count(name) > 0)
         {
-            SHUTDOWN_ERROR("Controller: Program '" + name +
+            SHUTDOWN_ERROR("ProgramManager: Program '" + name +
                            "' is already registered. Duplicate forbidden.");
         }
 
         m_catalog[name] = []() { return std::make_unique<T>(); };
 
-        INFO("Controller: Registered program '" + name + "'.");
+        INFO("ProgramManager: Registered program '" + name + "'.");
     }
 
     /**
