@@ -52,8 +52,6 @@ inline void writeToLog(const std::string& output, bool isError)
         logFile << output << std::endl;
         logFile.flush();
     }
-
-    if (isError) std::exit(EXIT_FAILURE);
 }
 
 }  // namespace transmuter::utils

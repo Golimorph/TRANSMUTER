@@ -3,7 +3,9 @@ CXX = g++
 
 # Include paths for all modules
 INC = -I/usr/include/eigen3 \
-      -I./sw/core/inc \
+      -I./sw/controller/inc \
+	  -I./sw/controller/programs/if \
+	  -I./sw/controller/programs/inc \
       -I./sw/geometry/inc \
 	  -I./sw/geometry/shapes/inc \
       -I./sw/pathgen/inc \
@@ -13,7 +15,8 @@ INC = -I/usr/include/eigen3 \
 
 # Source files
 SRCS = sw/main.cc \
-       $(wildcard sw/core/src/*.cc) \
+       $(wildcard sw/controller/src/*.cc) \
+	   $(wildcard sw/controller/programs/src/*.cc) \
        $(wildcard sw/geometry/src/*.cc) \
 	   $(wildcard sw/geometry/shapes/src/*.cc) \
        $(wildcard sw/pathgen/src/*.cc) \
