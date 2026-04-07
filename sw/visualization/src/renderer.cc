@@ -8,6 +8,18 @@
 namespace transmuter::visualization
 {
 
+// We use a static or global helper because GLFW is a C-API
+// and doesn't know about C++ 'this' pointers easily.
+static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+    // Retrieve the Renderer instance attached to this window
+    Renderer* renderer = static_cast<Renderer*>(glfwGetWindowUserPointer(window));
+    if (renderer)
+    {
+        renderer->handleScroll(yoffset);
+    }
+}
+
 Renderer::Renderer(int width, int height, const std::string& title)
     : m_width(width), m_height(height), m_rotX(20.0f), m_rotY(45.0f)
 {
@@ -31,6 +43,10 @@ Renderer::Renderer(int width, int height, const std::string& title)
     glClearColor(0.12f, 0.12f, 0.14f, 1.0f);
     glEnable(GL_DEPTH_TEST);
 
+    // Scroll callback for zooming
+    glfwSetWindowUserPointer(m_window, this);  // Attach 'this' so the callback can find it
+    glfwSetScrollCallback(m_window, scroll_callback);
+
     INFO("Renderer: OpenGL Legacy Pipeline initialized (" + std::to_string(width) + "x" +
          std::to_string(height) + ")");
 }
@@ -43,10 +59,34 @@ Renderer::~Renderer()
 
 void Renderer::handleInput()
 {
+    double currentX, currentY;
+    glfwGetCursorPos(m_window, &currentX, &currentY);
+
     if (glfwGetMouseButton(m_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
     {
-        m_rotY += 0.5f;
+        // 1. Calculate how far the mouse moved since the last frame
+        float deltaX = static_cast<float>(currentX - m_lastMouseX);
+        float deltaY = static_cast<float>(currentY - m_lastMouseY);
+
+        // 2. Rotate based on that movement
+        // Sensitivity (0.5f) controls how fast it spins
+        m_rotY += deltaX * 0.5f;
+        m_rotX += deltaY * 0.5f;
     }
+
+    // 3. Always update the 'last' position so the next frame knows where we were
+    m_lastMouseX = currentX;
+    m_lastMouseY = currentY;
+}
+
+void Renderer::handleScroll(double yoffset)
+{
+    // Adjust sensitivity as needed (5.0f or 10.0f usually feels good)
+    m_zoom += static_cast<float>(yoffset) * 10.0f;
+
+    // Optional: Clamp the zoom so you don't fly inside the box or too far away
+    if (m_zoom > -10.0f) m_zoom = -10.0f;
+    if (m_zoom < -1000.0f) m_zoom = -1000.0f;
 }
 
 void Renderer::beginFrame()
@@ -60,7 +100,7 @@ void Renderer::beginFrame()
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    glTranslatef(0.0f, 0.0f, -300.0f);
+    glTranslatef(0.0f, 0.0f, m_zoom);
     glRotatef(m_rotX, 1.0f, 0.0f, 0.0f);
     glRotatef(m_rotY, 0.0f, 1.0f, 0.0f);
 }

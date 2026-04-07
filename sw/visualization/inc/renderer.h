@@ -21,6 +21,7 @@ class Renderer
     bool shouldClose() const;
     void beginFrame();
     void endFrame();
+    void handleScroll(double yoffset);
 
     void drawWorkpiece(std::shared_ptr<geometry::PointCloud> workpiece);
     void drawToolPath(std::shared_ptr<geometry::PointCloud> toolPath);
@@ -35,6 +36,10 @@ class Renderer
     int m_height;
     float m_rotX;
     float m_rotY;
+    float m_zoom = -300.0f;
+
+    double m_lastMouseX;
+    double m_lastMouseY;
 };
 
 }  // namespace transmuter::visualization

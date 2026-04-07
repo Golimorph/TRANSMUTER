@@ -18,7 +18,10 @@ class BoxMillingProgram : public ProgramIf
     void execute() override;
 
    private:
-    transmuter::geometry::MillingScene createMillingScene() const;
+    transmuter::geometry::MillingScene createMillingScene();
+    std::shared_ptr<transmuter::geometry::PointCloud> m_workPiece;
+    std::shared_ptr<transmuter::geometry::PointCloud> m_toolPath;
+    std::shared_ptr<transmuter::geometry::PointCloud> m_toolModel;
 };
 
 }  // namespace transmuter::controller::programs

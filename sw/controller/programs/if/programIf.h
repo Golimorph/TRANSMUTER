@@ -11,11 +11,32 @@ class ProgramIf
     virtual void execute() = 0;
     void stop()
     {
-        m_keepRunning.store(false);
+        m_state = ProgramState::FINISHED;
     }
 
    protected:
-    std::atomic<bool> m_keepRunning{true};
+    enum class ProgramState
+    {
+        IDLE,
+        SETUP,
+        PATH_GENERATION,
+        MILLING_SIMULATION,
+        PAUSED,
+        FINISHED,
+    };
+
+    void setState(ProgramState state)
+    {
+        m_state = state;
+    }
+
+    ProgramState getState() const
+    {
+        return m_state;
+    }
+
+   private:
+    ProgramState m_state = ProgramState::SETUP;
 };
 }  // namespace transmuter::controller::programs
 #endif
