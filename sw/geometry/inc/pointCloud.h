@@ -59,6 +59,11 @@ class PointCloud
         m_vertices.shrink_to_fit();
     }
 
+    bool isEmpty() const
+    {
+        return m_vertices.empty();
+    }
+
    private:
     std::vector<Vertex> m_vertices;
 };

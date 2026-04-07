@@ -1,48 +1,89 @@
 #include "visualizer.h"
 
+#include <GLFW/glfw3.h>
+
 #include "trace.h"
 
 namespace transmuter::visualization
 {
 
-Visualizer::Visualizer(int w, int h, const std::string& title) : m_renderer(w, h, title)
+Visualizer::Visualizer(int w, int h, const std::string& title,
+                       transmuter::geometry::MillingScene millingScene)
+    : m_renderer(w, h, title),
+      p_workPiece(millingScene.workpiece),
+      p_toolPath(millingScene.toolPath),
+      p_toolModel(millingScene.toolModel)
 {
-    INFO("Visualizer: Scene Manager initialized.");
+    if (!p_workPiece)
+    {
+        ERROR("workpiece is null ptr");
+    }
+    if (!p_toolPath)
+    {
+        ERROR("toolPath is null ptr");
+    }
+    if (!p_toolModel)
+    {
+        ERROR("toolModel is null ptr");
+    }
+
+    INFO("Visualizer: Animation engine ready.");
+    refresh();
 }
 
-void Visualizer::showMillingScene(const geometry::PointCloud& part,
-                                  const geometry::PointCloud& path,
-                                  const geometry::PointCloud& tool)
+void Visualizer::moveTool(double t)
 {
-    size_t currentStep = 0;
-    float rotation = 0.0f;
-
-    INFO("Visualizer: Starting Animated Scene.");
-
-    while (!m_renderer.shouldClose())
+    if (t < 0.0 || t >= 1.0)
     {
-        m_renderer.beginFrame();
-
-        // 1. Static Workpiece
-        m_renderer.drawPointCloud(part, rotation);
-
-        // 2. Full Toolpath (The "Ghost" trace)
-        m_renderer.drawToolPath(path, rotation);
-
-        // 3. Dynamic Tool (The "Actor")
-        if (path.size() > 0)
-        {
-            const auto& node = path.getVertices()[currentStep];
-            // We pass the tool model and the current node's transform
-            m_renderer.drawTool(tool, node.pos, node.normal, rotation);
-
-            // Advance to next G-code line (looping back at the end)
-            currentStep = (currentStep + 1) % path.size();
-        }
-
-        rotation += 0.15f;
-        m_renderer.endFrame();
+        ERROR(
+            "Invalid tool path dimensionless coordinate parameter for animation."
+            "Must be in [0, 1).");
     }
+    m_toolPositionIndex = static_cast<uint64_t>(t * p_toolPath->size());
+}
+
+void Visualizer::advanceTool(double distance)
+{
+    if (distance < 0.0)
+    {
+        ERROR("Invalid tool path distance parameter for animation. Must be non-negative.");
+    }
+
+    uint64_t index = m_toolPositionIndex + static_cast<uint64_t>(distance * p_toolPath->size());
+
+    if (index >= p_toolPath->size())
+    {
+        INFO("Tool has reached the end of the path. Looping back to start.");
+    }
+
+    m_toolPositionIndex = index % p_toolPath->size();
+}
+
+bool Visualizer::refresh()
+{
+    if (m_renderer.shouldClose()) return false;
+
+    m_renderer.beginFrame();
+
+    m_renderer.drawWorkpiece(p_workPiece);
+    m_renderer.drawToolPath(p_toolPath);
+
+    if (!p_toolPath->isEmpty())
+    {
+        m_renderer.drawTool(p_toolModel, getToolNode().pos, getToolNode().normal);
+    }
+
+    m_renderer.endFrame();
+    return true;
+}
+
+geometry::Vertex Visualizer::getToolNode() const
+{
+    if (m_toolPositionIndex >= p_toolPath->size())
+    {
+        ERROR("Tool position index out of bounds. Check animation parameters and tool path size.");
+    }
+    return p_toolPath->getVertices()[m_toolPositionIndex];
 }
 
 }  // namespace transmuter::visualization

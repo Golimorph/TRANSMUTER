@@ -37,8 +37,8 @@ class ProgramManager
     {
         if (m_catalog.count(name) > 0)
         {
-            SHUTDOWN_ERROR("ProgramManager: Program '" + name +
-                           "' is already registered. Duplicate forbidden.");
+            ERROR("ProgramManager: Program '" + name +
+                  "' is already registered. Duplicate forbidden.");
         }
 
         m_catalog[name] = []() { return std::make_unique<T>(); };
@@ -55,7 +55,7 @@ class ProgramManager
     {
         if (m_catalog.find(name) == m_catalog.end())
         {
-            SHUTDOWN_ERROR("Program '" + name + "' not found in catalog.");
+            ERROR("Program '" + name + "' not found in catalog.");
         }
         auto program = m_catalog[name]();
         program->execute();

@@ -15,14 +15,14 @@
 
 #define SET_TRACE_MASK(mask) (transmuter::utils::currentTraceMask = (mask))
 
-// Level 0: SHUTDOWN_ERROR (Always prints, then exits)
-#define SHUTDOWN_ERROR(msg)                                                                    \
-    {                                                                                          \
-        std::stringstream ss;                                                                  \
-        ss << " [SHUTDOWN_ERROR] " << transmuter::utils::getTimestamp() << "[" << __FILENAME__ \
-           << ":" << __LINE__ << "] " << msg;                                                  \
-        transmuter::utils::writeToLog(ss.str(), true);                                         \
-        std::exit(EXIT_FAILURE);                                                               \
+// Level 0: ERROR (Always prints, then exits)
+#define ERROR(msg)                                                                           \
+    {                                                                                        \
+        std::stringstream ss;                                                                \
+        ss << " [ERROR] " << transmuter::utils::getTimestamp() << "[" << __FILENAME__ << ":" \
+           << __LINE__ << "] " << msg;                                                       \
+        transmuter::utils::writeToLog(ss.str(), true);                                       \
+        std::exit(EXIT_FAILURE);                                                             \
     }
 
 // Level 1: INFO (Always prints)
