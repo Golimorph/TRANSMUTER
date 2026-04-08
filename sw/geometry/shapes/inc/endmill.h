@@ -1,6 +1,8 @@
 #ifndef TRANSMUTER_GEOMETRY_SHAPES_TOOL_H
 #define TRANSMUTER_GEOMETRY_SHAPES_TOOL_H
 
+#include <memory>
+
 #include "pointCloud.h"
 
 namespace transmuter::geometry::shapes
@@ -14,9 +16,9 @@ class Endmill
      * @param diameter Tool diameter (e.g., 4.0f)
      * @param length Visible length of the tool
      */
-    static PointCloud generate(float diameter, float length)
+    static std::shared_ptr<PointCloud> generate(float diameter, float length)
     {
-        PointCloud tool;
+        auto tool = std::make_shared<PointCloud>();
         float radius = diameter / 2.0f;
 
         // Generate a cylinder of points
@@ -28,7 +30,7 @@ class Endmill
                 Vertex v;
                 v.pos = Eigen::Vector3f(cos(rad) * radius, sin(rad) * radius, h);
                 v.normal = Eigen::Vector3f(cos(rad), sin(rad), 0.0f);  // Sideways normals
-                tool.addVertex(v);
+                tool->addVertex(v);
             }
         }
         return tool;

@@ -2,6 +2,7 @@
 #define TRANSMUTER_GEOMETRY_SHAPES_BOX_H
 
 #include <Eigen/Dense>
+#include <memory>
 
 #include "pointCloud.h"
 #include "vertex.h"
@@ -26,7 +27,7 @@ class Box
      * @param density The distance between points on the surface (mm).
      * @return A PointCloud object populated with Vertices and Normals.
      */
-    static PointCloud generate(const Eigen::Vector3f& dimensions, float density);
+    static std::shared_ptr<PointCloud> generate(const Eigen::Vector3f& dimensions, float density);
 };
 
 }  // namespace transmuter::geometry::shapes

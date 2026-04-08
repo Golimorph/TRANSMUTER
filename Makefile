@@ -8,7 +8,9 @@ INC = -I/usr/include/eigen3 \
 	  -I./sw/controller/programs/inc \
       -I./sw/geometry/inc \
 	  -I./sw/geometry/shapes/inc \
-      -I./sw/pathgen/inc \
+      -I./sw/pathGeneration/inc \
+	  -I./sw/pathGeneration/pathAlgorithms/if \
+	  -I./sw/pathGeneration/pathAlgorithms/inc \
       -I./sw/rendering/inc \
       -I./sw/visualization/inc \
 	  -I./sw/utils/inc
@@ -19,7 +21,8 @@ SRCS = sw/main.cc \
 	   $(wildcard sw/controller/programs/src/*.cc) \
        $(wildcard sw/geometry/src/*.cc) \
 	   $(wildcard sw/geometry/shapes/src/*.cc) \
-       $(wildcard sw/pathgen/src/*.cc) \
+       $(wildcard sw/pathGeneration/src/*.cc) \
+	   $(wildcard sw/pathGeneration/pathAlgorithms/src/*.cc) \
        $(wildcard sw/visualization/src/*.cc)
 
 OBJS = $(SRCS:.cc=.o)

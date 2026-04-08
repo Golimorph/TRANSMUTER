@@ -1,0 +1,1 @@
+Each algorithm creates a tool path and they all share the same interface

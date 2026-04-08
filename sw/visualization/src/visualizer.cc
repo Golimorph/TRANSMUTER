@@ -8,7 +8,7 @@ namespace transmuter::visualization
 {
 
 Visualizer::Visualizer(int w, int h, const std::string& title,
-                       transmuter::geometry::MillingScene millingScene)
+                       const transmuter::geometry::MillingScene& millingScene)
     : m_renderer(w, h, title),
       p_workPiece(millingScene.workpiece),
       p_toolPath(millingScene.toolPath),
@@ -83,7 +83,9 @@ geometry::Vertex Visualizer::getToolNode() const
     {
         ERROR("Tool position index out of bounds. Check animation parameters and tool path size.");
     }
-    return p_toolPath->getVertices()[m_toolPositionIndex];
+    static std::vector<transmuter::geometry::Vertex> toolPathRenderSnapshot;
+    p_toolPath->copyTo(toolPathRenderSnapshot);
+    return toolPathRenderSnapshot[m_toolPositionIndex];
 }
 
 }  // namespace transmuter::visualization

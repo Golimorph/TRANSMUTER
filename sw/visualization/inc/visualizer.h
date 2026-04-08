@@ -22,7 +22,7 @@ class Visualizer
 {
    public:
     Visualizer(int w, int h, const std::string& title,
-               transmuter::geometry::MillingScene millingScene);
+               const transmuter::geometry::MillingScene& millingScene);
 
     /*! @brief Refreshes the visualization.
      * @return true if the visualization was updated. False if the window was closed.*/

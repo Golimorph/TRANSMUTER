@@ -118,7 +118,13 @@ void Renderer::drawWorkpiece(std::shared_ptr<geometry::PointCloud> workpiece)
     // 1. Draw Points with Normal-to-RGB color mapping
     glPointSize(3.0f);
     glBegin(GL_POINTS);
-    for (const auto& v : workpiece->getVertices())
+
+    // We take a snapshot of the tool model's vertices to minimize time spent in the critical
+    // rendering loop
+    static std::vector<transmuter::geometry::Vertex> workPieceRenderSnapshot;
+    workpiece->copyTo(workPieceRenderSnapshot);
+
+    for (const auto& v : workPieceRenderSnapshot)
     {
         // Absolute value of normals maps well to RGB for visual debugging
         // |X| -> Red, |Y| -> Green, |Z| -> Blue
@@ -130,7 +136,7 @@ void Renderer::drawWorkpiece(std::shared_ptr<geometry::PointCloud> workpiece)
     // 2. Draw Surface Normal "Needles"
     glLineWidth(1.0f);
     glBegin(GL_LINES);
-    for (const auto& v : workpiece->getVertices())
+    for (const auto& v : workPieceRenderSnapshot)
     {
         glColor3f(std::abs(v.normal.x()), std::abs(v.normal.y()), std::abs(v.normal.z()));
 
@@ -152,7 +158,12 @@ void Renderer::drawToolPath(std::shared_ptr<geometry::PointCloud> toolPath)
 
     glDisable(GL_LIGHTING);
     glBegin(GL_LINE_STRIP);
-    for (const auto& v : toolPath->getVertices())
+
+    // We take a snapshot of the tool model's vertices to minimize time spent in the critical
+    // rendering loop
+    static std::vector<transmuter::geometry::Vertex> toolPathRenderSnapshot;
+    toolPath->copyTo(toolPathRenderSnapshot);
+    for (const auto& v : toolPathRenderSnapshot)
     {
         // Path normals also get colors so we can see tool orientation history
         glColor3f(v.normal.x() * 0.5f + 0.5f, v.normal.y() * 0.5f + 0.5f,
@@ -162,7 +173,7 @@ void Renderer::drawToolPath(std::shared_ptr<geometry::PointCloud> toolPath)
     glEnd();
 
     glBegin(GL_LINES);
-    for (const auto& v : toolPath->getVertices())
+    for (const auto& v : toolPathRenderSnapshot)
     {
         glColor3f(std::abs(v.normal.x()), std::abs(v.normal.y()), std::abs(v.normal.z()));
 
@@ -193,7 +204,12 @@ void Renderer::drawTool(std::shared_ptr<geometry::PointCloud> toolModel, const E
 
     glBegin(GL_POINTS);
     glColor3f(1.0f, 0.1f, 0.1f);  // Solid Red for the tool as requested
-    for (const auto& v : toolModel->getVertices())
+
+    // We take a snapshot of the tool model's vertices to minimize time spent in the critical
+    // rendering loop
+    static std::vector<transmuter::geometry::Vertex> toolModelRenderSnapshot;
+    toolModel->copyTo(toolModelRenderSnapshot);
+    for (const auto& v : toolModelRenderSnapshot)
     {
         glVertex3f(v.pos.x(), v.pos.y(), v.pos.z());
     }
