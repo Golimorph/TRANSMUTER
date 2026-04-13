@@ -35,6 +35,8 @@ class Visualizer
     geometry::Vertex getToolNode() const;
 
     Renderer m_renderer;
+    std::shared_ptr<geometry::PointCloud> p_stock = nullptr;
+    std::shared_ptr<geometry::PointCloud> p_model = nullptr;
     std::shared_ptr<geometry::PointCloud> p_workPiece = nullptr;
     std::shared_ptr<geometry::PointCloud> p_toolPath = nullptr;
     std::shared_ptr<geometry::PointCloud> p_toolModel = nullptr;

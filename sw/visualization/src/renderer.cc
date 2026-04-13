@@ -217,6 +217,52 @@ void Renderer::drawTool(std::shared_ptr<geometry::PointCloud> toolModel, const E
     glPopMatrix();
 }
 
+void Renderer::drawStock(std::shared_ptr<geometry::PointCloud> stock)
+{
+    if (!stock)
+    {
+        ERROR("stock is null ptr");
+    }
+
+    glDisable(GL_LIGHTING);
+    glPointSize(2.0f);  // Smaller points for boundaries
+    glBegin(GL_POINTS);
+
+    // Faint gray color for stock boundary
+    glColor3f(0.2f, 0.2f, 0.2f);
+
+    static std::vector<transmuter::geometry::Vertex> stockRenderSnapshot;
+    stock->copyTo(stockRenderSnapshot);
+    for (const auto& v : stockRenderSnapshot)
+    {
+        glVertex3f(v.pos.x(), v.pos.y(), v.pos.z());
+    }
+    glEnd();
+}
+
+void Renderer::drawModel(std::shared_ptr<geometry::PointCloud> model)
+{
+    if (!model)
+    {
+        ERROR("model is null ptr");
+    }
+
+    glDisable(GL_LIGHTING);
+    glPointSize(2.0f);  // Smaller points for boundaries
+    glBegin(GL_POINTS);
+
+    // Faint blue color for model boundary
+    glColor3f(0.3f, 0.3f, 1.0f);
+
+    static std::vector<transmuter::geometry::Vertex> modelRenderSnapshot;
+    model->copyTo(modelRenderSnapshot);
+    for (const auto& v : modelRenderSnapshot)
+    {
+        glVertex3f(v.pos.x(), v.pos.y(), v.pos.z());
+    }
+    glEnd();
+}
+
 void Renderer::endFrame()
 {
     glfwSwapBuffers(m_window);

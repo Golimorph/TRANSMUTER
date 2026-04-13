@@ -19,6 +19,8 @@ class BoxMillingProgram : public ProgramIf
 
    private:
     transmuter::geometry::MillingScene createMillingScene();
+    std::shared_ptr<transmuter::geometry::PointCloud> m_stock;
+    std::shared_ptr<transmuter::geometry::PointCloud> m_model;
     std::shared_ptr<transmuter::geometry::PointCloud> m_workPiece;
     std::shared_ptr<transmuter::geometry::PointCloud> m_toolPath;
     std::shared_ptr<transmuter::geometry::PointCloud> m_toolModel;

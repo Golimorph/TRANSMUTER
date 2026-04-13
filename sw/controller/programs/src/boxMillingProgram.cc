@@ -1,6 +1,7 @@
 #include "boxMillingProgram.h"
 
 #include "box.h"
+#include "cylinder.h"
 #include "endmill.h"
 #include "pathGenerator.h"
 #include "pathGeneratorConfig.h"
@@ -64,17 +65,21 @@ void BoxMillingProgram::execute()
 
 transmuter::geometry::MillingScene BoxMillingProgram::createMillingScene()
 {
-    Eigen::Vector3f dims(100.0f, 100.0f, 100.0f);
+    INFO("Creating milling scene...");
 
-    // Assign to the CLASS MEMBERS so they stay alive in memory
+    m_stock = transmuter::geometry::shapes::Cylinder::generate(100.0f, 200.0f, 5.0f);
+
+    Eigen::Vector3f dims(100.0f, 100.0f, 100.0f);
     m_workPiece = transmuter::geometry::shapes::Box::generate(dims, 5.0f);
+
+    m_model = transmuter::geometry::shapes::Box::generate(dims / 2, 5.0f);
 
     m_toolPath = std::make_shared<transmuter::geometry::PointCloud>();
 
-    m_toolModel = transmuter::geometry::shapes::Endmill::generate(4.0f, 30.0f);
+    m_toolModel = transmuter::geometry::shapes::Endmill::generate(10.0f, 30.0f);
 
-    // Return the struct using the persistent members
-    return transmuter::geometry::MillingScene{m_workPiece, m_toolPath, m_toolModel};
+    return transmuter::geometry::MillingScene{m_stock, m_model, m_workPiece, m_toolPath,
+                                              m_toolModel};
 }
 
 }  // namespace transmuter::controller::programs

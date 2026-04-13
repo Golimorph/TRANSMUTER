@@ -27,6 +27,8 @@ class Renderer
     void drawToolPath(std::shared_ptr<geometry::PointCloud> toolPath);
     void drawTool(std::shared_ptr<geometry::PointCloud> toolModel, const Eigen::Vector3f& pos,
                   const Eigen::Vector3f& normal);
+    void drawStock(std::shared_ptr<geometry::PointCloud> stock);
+    void drawModel(std::shared_ptr<geometry::PointCloud> model);
 
    private:
     void handleInput();

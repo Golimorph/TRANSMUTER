@@ -10,10 +10,20 @@ namespace transmuter::visualization
 Visualizer::Visualizer(int w, int h, const std::string& title,
                        const transmuter::geometry::MillingScene& millingScene)
     : m_renderer(w, h, title),
+      p_stock(millingScene.stock),
+      p_model(millingScene.model),
       p_workPiece(millingScene.workpiece),
       p_toolPath(millingScene.toolPath),
       p_toolModel(millingScene.toolModel)
 {
+    if (!p_stock)
+    {
+        ERROR("stock is null ptr");
+    }
+    if (!p_model)
+    {
+        ERROR("model is null ptr");
+    }
     if (!p_workPiece)
     {
         ERROR("workpiece is null ptr");
@@ -65,6 +75,8 @@ bool Visualizer::refresh()
 
     m_renderer.beginFrame();
 
+    m_renderer.drawStock(p_stock);
+    m_renderer.drawModel(p_model);
     m_renderer.drawWorkpiece(p_workPiece);
     m_renderer.drawToolPath(p_toolPath);
 
