@@ -45,23 +45,29 @@ ANNOTATED_TREE=$(tree -df "$SW_ROOT" | grep -v 'directories' | while IFS= read -
 done)
 
 # 3. Final Formatting & Replacement
-printf "%s\n" "$ANNOTATED_TREE" > tree_block.tmp
+{
+    echo '```text'
+    printf "%s\n" "$ANNOTATED_TREE"
+    echo '```'
+} > tree_block.tmp
 
 awk -v anchor="$ANCHOR" '
 BEGIN { skipping = 0 }
 {
     if ($0 == anchor) {
         print $0
+        print ""
         while ((getline line < "tree_block.tmp") > 0) {
             print line
         }
         skipping = 1
         next
     }
-    # Resume printing after the tree ends (next blank line or header)
+
     if (skipping && ($0 == "" || $0 ~ /^#/)) {
         skipping = 0
     }
+
     if (!skipping) {
         print $0
     }
