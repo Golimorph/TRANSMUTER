@@ -10,7 +10,7 @@ sudo apt update
 
 # 2. Install Build Essentials & C++23 Capable Compiler
 # Note: g++-15 or newer is preferred for full C++23 support
-sudo apt install -y build-essential git pkg-config
+sudo apt install -y build-essential git pkg-config clang-format
 
 # 3. Install Math & Kinematics (Eigen)
 sudo apt install -y libeigen3-dev
