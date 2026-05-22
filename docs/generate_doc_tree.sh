@@ -45,13 +45,18 @@ ANNOTATED_TREE=$(tree -df "$SW_ROOT" | grep -v 'directories' | while IFS= read -
 done)
 
 # 3. Final Formatting & Replacement
+BEGIN_MARK="<!-- BEGIN GENERATED PROJECT TREE -->"
+END_MARK="<!-- END GENERATED PROJECT TREE -->"
+
 {
+    echo "$BEGIN_MARK"
     echo '```text'
     printf "%s\n" "$ANNOTATED_TREE"
     echo '```'
+    echo "$END_MARK"
 } > tree_block.tmp
 
-awk -v anchor="$ANCHOR" '
+awk -v anchor="$ANCHOR" -v begin="$BEGIN_MARK" -v end="$END_MARK" '
 BEGIN { skipping = 0 }
 {
     if ($0 == anchor) {
@@ -64,13 +69,20 @@ BEGIN { skipping = 0 }
         next
     }
 
-    if (skipping && ($0 == "" || $0 ~ /^#/)) {
-        skipping = 0
+    if (skipping) {
+        if ($0 == end) {
+            skipping = 0
+        }
+        next
     }
 
-    if (!skipping) {
-        print $0
+    if ($0 == begin) {
+        skipping = 1
+        next
     }
+
+    print $0
 }' "$ROOT_README" > README.tmp && mv README.tmp "$ROOT_README"
+
 
 rm "$TEMP_MAP" tree_block.tmp
