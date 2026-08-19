@@ -14,7 +14,8 @@ namespace transmuter::controller::programs
 
 void BoxMillingProgram::execute()
 {
-    INFO("BoxMillingProgram: Starting execution...");
+    INFO("BoxMillingProgram: Starting execution.");
+
     auto millingScene = createMillingScene();
     INFO("BoxMillingProgram: Milling scene created.");
 
@@ -69,9 +70,9 @@ transmuter::geometry::MillingScene BoxMillingProgram::createMillingScene()
 
     m_stock = transmuter::geometry::shapes::Cylinder::generate(100.0f, 200.0f, 5.0f);
 
-    Eigen::Vector3f dims(100.0f, 100.0f, 100.0f);
-    m_workPiece = transmuter::geometry::shapes::Box::generate(dims, 5.0f);
+    m_workPiece = m_stock;
 
+    Eigen::Vector3f dims(50.0f, 50.0f, 50.0f);
     m_model = transmuter::geometry::shapes::Box::generate(dims / 2, 5.0f);
 
     m_toolPath = std::make_shared<transmuter::geometry::PointCloud>();

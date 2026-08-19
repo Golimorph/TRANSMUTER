@@ -9,6 +9,11 @@
 namespace transmuter::controller::programs
 {
 
+/**
+ * @brief The BoxMillingProgram is a simplistic demonstration of how to mill a cylinder into a cube
+ * It sets up the environment, performs the path calculation, and then does a material removal
+ * simulation along the path.
+ *  */
 class BoxMillingProgram : public ProgramIf
 {
    public:
@@ -18,12 +23,18 @@ class BoxMillingProgram : public ProgramIf
     void execute() override;
 
    private:
+    // Milling scene varialbes are passed and shared for visualization of the program.
     transmuter::geometry::MillingScene createMillingScene();
-    std::shared_ptr<transmuter::geometry::PointCloud> m_stock;
-    std::shared_ptr<transmuter::geometry::PointCloud> m_model;
-    std::shared_ptr<transmuter::geometry::PointCloud> m_workPiece;
-    std::shared_ptr<transmuter::geometry::PointCloud> m_toolPath;
-    std::shared_ptr<transmuter::geometry::PointCloud> m_toolModel;
+    std::shared_ptr<transmuter::geometry::PointCloud>
+        m_stock;  // The original shape before cutting starts.
+    std::shared_ptr<transmuter::geometry::PointCloud>
+        m_model;  // The desired model I want as end result.
+    std::shared_ptr<transmuter::geometry::PointCloud>
+        m_workPiece;  // The actual state of the model during milling operation visualization.
+    std::shared_ptr<transmuter::geometry::PointCloud> m_toolPath;  // The path the tool will take.
+    std::shared_ptr<transmuter::geometry::PointCloud>
+        m_toolModel;  // The model of the tool itself. For example a 3mm end mill would be a
+                      // cylinder.
 };
 
 }  // namespace transmuter::controller::programs

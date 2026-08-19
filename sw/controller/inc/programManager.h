@@ -28,7 +28,7 @@ class ProgramManager
 
     /**
      * @brief Adds a program type to the available catalog.
-     * @tparam T The class type (must inherit from ProgramIf).
+     * @param T The class type (must inherit from ProgramIf).
      * @param name The unique string identifier for this program.
      * @note Crashes the application if the name is already taken.
      */
