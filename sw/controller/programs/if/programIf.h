@@ -7,8 +7,8 @@ namespace transmuter::controller::programs
 
 /**
  * @brief The ProgramIf is the interface that must be implemented by all programs
- * It defines the needed execution and stop methods for the program as well as a
- * state the program can be in.
+ * It defines the needed execution and stop methods for the program as well as the
+ * states the program can be in.
  */
 class ProgramIf
 {

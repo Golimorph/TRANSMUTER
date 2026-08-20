@@ -11,10 +11,10 @@ namespace transmuter::pathgenerator
 class PathGenerator
 {
    public:
-    PathGenerator() = default;
+    PathGenerator(PathGeneratorConfig config,
+                  const transmuter::geometry::MillingScene& millingScene);
     ~PathGenerator();
-    void startGeneration(PathGeneratorConfig config,
-                         const transmuter::geometry::MillingScene& millingScene);
+    void startGeneration();
     void stopGeneration();
     bool isGenerationFinished() const;
     bool isGenerationInProgress() const;
@@ -26,9 +26,6 @@ class PathGenerator
     std::shared_ptr<transmuter::geometry::PointCloud> m_generatedToolPath;
     std::atomic<bool> m_isToolPathReady{false};
 
-    void setAlgorithm(AlgorithmType algorithmType,
-                      const transmuter::geometry::MillingScene& millingScene);
-    std::string algorithmTypeToString(AlgorithmType type);
     void launchGenerationThread();
 };
 

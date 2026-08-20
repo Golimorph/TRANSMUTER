@@ -14,15 +14,12 @@ namespace transmuter::controller::programs
 
 void BoxMillingProgram::execute()
 {
-    INFO("BoxMillingProgram: Starting execution.");
+    INFO("Starting execution.");
 
+    INFO("Milling scene created.");
     auto millingScene = createMillingScene();
-    INFO("BoxMillingProgram: Milling scene created.");
-
     transmuter::visualization::Visualizer visualizer(
         1024, 768, "Transmuter: 5-Axis Path Simulation", millingScene);
-
-    transmuter::pathgenerator::PathGenerator pathGen;
 
     transmuter::pathgenerator::PathGeneratorConfig config{
         .algorithmType = transmuter::pathgenerator::AlgorithmType::THREE_AXIS_SPIRAL,
@@ -32,26 +29,23 @@ void BoxMillingProgram::execute()
         .maxDepth = 10.0,
     };
 
+    transmuter::pathgenerator::PathGenerator pathGen(config, millingScene);
+
     setState(ProgramState::PATH_GENERATION);
     while (visualizer.refresh())
     {
         switch (getState())
         {
             case ProgramState::PATH_GENERATION:
-
-                if (pathGen.isGenerationInProgress())
+                if (!pathGen.isGenerationInProgress())
                 {
-                    break;  // Wait for generation to finish
+                    INFO("Starting path generation.");
+                    pathGen.startGeneration();
                 }
-                else if (pathGen.isGenerationFinished())
+                if (pathGen.isGenerationFinished())
                 {
-                    INFO("Path generation finished. Starting milling simulation.");
+                    INFO("Path generation finished.");
                     setState(ProgramState::MILLING_SIMULATION);
-                }
-                else
-                {
-                    INFO("Starting path generation...");
-                    pathGen.startGeneration(config, millingScene);
                 }
                 break;
             case ProgramState::MILLING_SIMULATION:
