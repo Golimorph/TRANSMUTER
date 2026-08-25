@@ -31,7 +31,7 @@ OBJS = $(SRCS:.cc=.o)
 LIBS = -lGL -lGLU -lGLEW -lglfw
 
 #Compilation flags
-CXXFLAGS = -std=c++23 -O3 -Wall $(INC)
+CXXFLAGS = -std=c++23 -O3 -Wall -fno-exceptions $(INC)
 
 # Executable name
 TARGET = transmuter
