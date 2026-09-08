@@ -4,7 +4,9 @@
 #include <memory>
 
 #include "millingScene.h"
+#include "pathGenerator.h"
 #include "programIf.h"
+#include "visualizer.h"
 
 namespace transmuter::controller::programs
 {
@@ -35,6 +37,15 @@ class BoxMillingProgram : public ProgramIf
     std::shared_ptr<transmuter::geometry::PointCloud>
         m_toolModel;  // The model of the tool itself. For example a 3mm end mill would be a
                       // cylinder.
+
+    struct MillingEnvironment
+    {
+        transmuter::visualization::Visualizer visualizer;
+        transmuter::pathgenerator::PathGenerator pathGenerator;
+    };
+
+    MillingEnvironment createMillingEnvironment(
+        const transmuter::geometry::MillingScene& millingScene) const;
 };
 
 }  // namespace transmuter::controller::programs

@@ -13,38 +13,38 @@ namespace transmuter::controller::programs
 class ProgramIf
 {
    public:
-    virtual ~ProgramIf() = default;
-    virtual void execute() = 0;
-
-    void stop()
-    {
-        setState(ProgramState::FINISHED);
-    }
-
-   protected:
     enum class ProgramState
     {
         IDLE,
-        SETUP,
-        PATH_GENERATION,
-        MILLING_SIMULATION,
+        RUNNING,
         PAUSED,
         FINISHED,
+        STOPPED,
+        FAILED,
     };
 
-    void setState(ProgramState state)
-    {
-        INFO("Program entered state: " << magic_enum::enum_name(state).data());
-        m_state = state;
-    }
+    virtual ~ProgramIf() = default;
+    virtual void execute() = 0;
 
     ProgramState getState() const
     {
         return m_state;
     }
 
+    void stop()
+    {
+        setState(ProgramState::STOPPED);
+    }
+
+   protected:
+    void setState(ProgramState state)
+    {
+        INFO("Program entered state: " << magic_enum::enum_name(state).data());
+        m_state = state;
+    }
+
    private:
-    ProgramState m_state = ProgramState::SETUP;
+    ProgramState m_state = ProgramState::IDLE;
 };
 }  // namespace transmuter::controller::programs
 #endif
