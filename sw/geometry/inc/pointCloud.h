@@ -2,7 +2,9 @@
 #define TRANSMUTER_GEOMETRY_POINT_CLOUD_H
 
 #include <algorithm>
+#include <memory>
 #include <mutex>
+#include <utility>
 #include <vector>
 
 #include "trace.h"
@@ -70,6 +72,32 @@ class PointCloud
     {
         std::lock_guard<std::mutex> lock(m_mutex);
         m_vertices.clear();
+    }
+
+    /**
+     * @brief Remove every vertex accepted by predicate in one locked operation.
+     * @return The number of removed vertices.
+     */
+    template <typename Predicate>
+    size_t eraseIf(Predicate&& predicate)
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        const size_t previousSize = m_vertices.size();
+        m_vertices.erase(std::remove_if(m_vertices.begin(), m_vertices.end(),
+                                        std::forward<Predicate>(predicate)),
+                         m_vertices.end());
+        return previousSize - m_vertices.size();
+    }
+
+    /**
+     * @brief Make an independent point-cloud snapshot.
+     */
+    std::shared_ptr<PointCloud> clone() const
+    {
+        auto result = std::make_shared<PointCloud>();
+        std::lock_guard<std::mutex> lock(m_mutex);
+        result->m_vertices = m_vertices;
+        return result;
     }
 
     void finalize()

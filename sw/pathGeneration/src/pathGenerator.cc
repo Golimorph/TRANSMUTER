@@ -9,20 +9,36 @@
 namespace transmuter::pathgenerator
 {
 
-PathGenerator::PathGenerator(PathGeneratorConfig config,
-                             const transmuter::geometry::MillingScene& millingScene)
+namespace
 {
-    INFO("Setting algorithm to: " << magic_enum::enum_name(config.algorithmType).data() << ".");
-    switch (config.algorithmType)
+
+std::unique_ptr<algorithms::PathAlgorithmIf> createAlgorithm(
+    AlgorithmType algorithmType, const geometry::MillingScene& millingScene)
+{
+    switch (algorithmType)
     {
         case AlgorithmType::THREE_AXIS_SPIRAL:
-            m_algorithm =
-                std::make_unique<transmuter::pathgenerator::algorithms::ThreeAxisSpiralAlgorithm>(
-                    millingScene);
-            break;
+            return std::make_unique<algorithms::ThreeAxisSpiralAlgorithm>(millingScene);
         default:
             ERROR("Unknown algorithm type selected.");
     }
+    return nullptr;
+}
+
+}  // namespace
+
+// Keep the scene-owned path so generation and visualization observe the same object.
+PathGenerator::PathGenerator(PathGeneratorConfig config,
+                             const transmuter::geometry::MillingScene& millingScene)
+    : m_liveToolPath(millingScene.toolPath)
+{
+    if (!m_liveToolPath)
+    {
+        ERROR("toolPath is null ptr");
+    }
+
+    INFO("Setting algorithm to: " << magic_enum::enum_name(config.algorithmType).data() << ".");
+    m_algorithm = createAlgorithm(config.algorithmType, millingScene);
     m_algorithm->setConfig(config);
 }
 
@@ -33,12 +49,21 @@ PathGenerator::~PathGenerator()
 
 bool PathGenerator::isGenerationInProgress() const
 {
-    return m_stop == false;
+    return m_isGenerating.load();
 }
 
 bool PathGenerator::isGenerationFinished() const
 {
-    return m_isToolPathReady.load() == true && m_stop == true;
+    return m_isResultReady.load() && !m_isGenerating.load();
+}
+
+PathGenerationResult PathGenerator::getResult() const
+{
+    if (!isGenerationFinished())
+    {
+        ERROR("Path generation result requested before generation finished.");
+    }
+    return m_result;
 }
 
 void PathGenerator::startGeneration()
@@ -49,27 +74,38 @@ void PathGenerator::startGeneration()
 
 void PathGenerator::stopGeneration()
 {
-    m_stop = true;
-    m_isToolPathReady.store(false);
-    INFO("Stop signal sent to algorithm.");
+    m_stopRequested = true;
     if (m_thread.joinable())
     {
+        INFO("Stop signal sent to algorithm.");
         m_thread.join();
     }
+    m_isGenerating = false;
+    m_isResultReady.store(false);
 }
 
 void PathGenerator::launchGenerationThread()
 {
     INFO("Launching background path generation thread.");
-    m_isToolPathReady.store(false);
-    m_stop = false;
+    m_result = {};
+    m_isResultReady.store(false);
+    m_stopRequested = false;
+    m_isGenerating = true;
     m_thread = std::thread(
         [this]()
         {
-            m_algorithm->generate(m_stop);
-            m_isToolPathReady.store(true);
-            m_stop = true;
-            INFO("Path generation finished successfully.");
+            m_result = m_algorithm->generate(m_stopRequested, m_liveToolPath);
+            const bool wasStopped = m_stopRequested.load();
+            m_isResultReady.store(!wasStopped);
+            m_isGenerating = false;
+            if (wasStopped)
+            {
+                INFO("Path generation stopped after completing its current layer.");
+            }
+            else
+            {
+                INFO("Path generation finished successfully.");
+            }
         });
 }
 

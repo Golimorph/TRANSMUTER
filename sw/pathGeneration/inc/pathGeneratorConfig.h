@@ -19,9 +19,9 @@ struct PathGeneratorConfig
 {
     AlgorithmType algorithmType;
     Direction direction;
-    double toolDiameter;
-    double stepOver;
-    double maxDepth;
+    double pointSpacing;  // Maximum distance between consecutive tool-path samples.
+    double passSpacing;   // Distance between neighbouring passes on the same layer.
+    double layerSpacing;  // Distance between neighbouring depth layers.
 };
 
 }  // namespace transmuter::pathgenerator

@@ -28,11 +28,11 @@ void BoxMillingProgram::execute()
                 if (millingEnvironment.pathGenerator.isGenerationFinished())
                 {
                     INFO("Path generation finished.");
+                    millingEnvironment.visualizer.startToolPathPlayback();
                     setState(ProgramState::FINISHED);
                 }
                 break;
             case ProgramState::FINISHED:
-                millingEnvironment.visualizer.advanceTool(0.005);
                 break;
             case ProgramState::STOPPED:
             default:
@@ -50,19 +50,25 @@ transmuter::geometry::MillingScene BoxMillingProgram::createMillingScene()
 {
     INFO("Creating milling scene.");
 
-    m_stock = transmuter::geometry::shapes::Cylinder::generate(100.0f, 200.0f, 5.0f);
+    m_stock = transmuter::geometry::shapes::Cylinder::generateSolid(100.0f, 200.0f, 5.0f);
 
-    m_workPiece = m_stock;
+    // The stock remains an immutable reference. Cutting updates only the workpiece snapshot.
+    m_workpiece = m_stock->clone();
 
     Eigen::Vector3f dims(50.0f, 50.0f, 50.0f);
-    m_model = transmuter::geometry::shapes::Box::generate(dims / 2, 5.0f);
+    m_model = transmuter::geometry::shapes::Box::generate(dims, 5.0f);
 
     m_toolPath = std::make_shared<transmuter::geometry::PointCloud>();
 
     m_toolModel = transmuter::geometry::shapes::Endmill::generate(10.0f, 30.0f);
 
-    return transmuter::geometry::MillingScene{m_stock, m_model, m_workPiece, m_toolPath,
-                                              m_toolModel};
+    return transmuter::geometry::MillingScene{
+        .stock = m_stock,
+        .model = m_model,
+        .workpiece = m_workpiece,
+        .toolPath = m_toolPath,
+        .toolModel = m_toolModel,
+    };
 }
 
 BoxMillingProgram::MillingEnvironment BoxMillingProgram::createMillingEnvironment(
@@ -73,14 +79,17 @@ BoxMillingProgram::MillingEnvironment BoxMillingProgram::createMillingEnvironmen
     transmuter::pathgenerator::PathGeneratorConfig config{
         .algorithmType = transmuter::pathgenerator::AlgorithmType::THREE_AXIS_SPIRAL,
         .direction = transmuter::pathgenerator::Direction::FORWARD,
-        .toolDiameter = 4.0,
-        .stepOver = 2.0,
-        .maxDepth = 10.0,
+        .pointSpacing = 2.0,
+        .passSpacing = 2.0,
+        .layerSpacing = 10.0,
+    };
+    transmuter::visualization::VisualizerConfig visualizerConfig{
+        .toolPathPlaybackDurationSeconds = 60.0,
     };
 
     return MillingEnvironment{
         .visualizer = transmuter::visualization::Visualizer(
-            1024, 768, "Transmuter: 5-Axis Path Simulation", millingScene),
+            1024, 768, "Transmuter: 5-Axis Path Simulation", millingScene, visualizerConfig),
         .pathGenerator = transmuter::pathgenerator::PathGenerator(config, millingScene)};
 }
 

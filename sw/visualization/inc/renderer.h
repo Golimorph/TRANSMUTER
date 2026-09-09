@@ -4,8 +4,8 @@
 #include <GLFW/glfw3.h>
 
 #include <Eigen/Dense>
-#include <memory>
 #include <string>
+#include <vector>
 
 #include "pointCloud.h"
 
@@ -23,12 +23,12 @@ class Renderer
     void endFrame();
     void handleScroll(double yoffset);
 
-    void drawWorkpiece(std::shared_ptr<geometry::PointCloud> workpiece);
-    void drawToolPath(std::shared_ptr<geometry::PointCloud> toolPath);
-    void drawTool(std::shared_ptr<geometry::PointCloud> toolModel, const Eigen::Vector3f& pos,
+    void drawWorkpiece(const geometry::PointCloud& workpiece);
+    void drawToolPath(const geometry::PointCloud& toolPath);
+    void drawTool(const geometry::PointCloud& toolModel, const Eigen::Vector3f& pos,
                   const Eigen::Vector3f& normal);
-    void drawStock(std::shared_ptr<geometry::PointCloud> stock);
-    void drawModel(std::shared_ptr<geometry::PointCloud> model);
+    void drawStock(const geometry::PointCloud& stock);
+    void drawModel(const geometry::PointCloud& model);
 
    private:
     void handleInput();
@@ -42,6 +42,7 @@ class Renderer
 
     double m_lastMouseX;
     double m_lastMouseY;
+    std::vector<geometry::Vertex> m_pointCloudSnapshot;
 };
 
 }  // namespace transmuter::visualization

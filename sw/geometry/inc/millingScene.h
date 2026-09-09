@@ -9,12 +9,18 @@ namespace transmuter::geometry
 {
 struct MillingScene
 {
-    std::shared_ptr<geometry::PointCloud> stock;  // The initial raw material before milling
-    std::shared_ptr<geometry::PointCloud> model;  // The CAD model, the goal of the milling process
+    // Immutable shape inputs for this scene. A local stock may be an extracted, already-machined
+    // section of a larger workpiece.
+    std::shared_ptr<const geometry::PointCloud> stock;
+    std::shared_ptr<const geometry::PointCloud> model;
+
+    // Shared live state used by execution and visualization.
     std::shared_ptr<geometry::PointCloud>
         workpiece;  // The current state of the workpiece, updated after each milling step
     std::shared_ptr<geometry::PointCloud> toolPath;   // The complete path that the tool will follow
-    std::shared_ptr<geometry::PointCloud> toolModel;  // The geometry of the cutting tool
+
+    // The tool geometry is also an immutable input to the operation.
+    std::shared_ptr<const geometry::PointCloud> toolModel;
 };
 }  // namespace transmuter::geometry
 #endif  // TRANSMUTER_GEOMETRY_MILLING_SCENE_H

@@ -21,13 +21,21 @@ class Cylinder
     Cylinder() = delete;
 
     /**
-     * @brief Generates a point-cloud representation of a cylinder.
-     * @param dimensions Vector containing [radius, height, unused].
+     * @brief Generates the sampled boundary of a cylinder coaxial with +Z.
+     * @param radius Cylinder radius in the XY plane.
+     * @param height Cylinder extent along Z.
      * @param density The distance between points on the surface (mm).
      * @return A PointCloud object populated with Vertices and Normals.
      */
     static std::shared_ptr<PointCloud> generate(const float radius, const float height,
                                                 const float density);
+
+    /**
+     * @brief Generates points throughout the volume of a cylinder coaxial with +Z.
+     * @param density Approximate spacing between volume samples (mm).
+     */
+    static std::shared_ptr<PointCloud> generateSolid(const float radius, const float height,
+                                                     const float density);
 };
 
 }  // namespace transmuter::geometry::shapes

@@ -3,6 +3,9 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 
+#include <cmath>
+#include <cstddef>
+
 #include "trace.h"
 
 namespace transmuter::visualization
@@ -105,94 +108,48 @@ void Renderer::beginFrame()
     glRotatef(m_rotY, 0.0f, 1.0f, 0.0f);
 }
 
-void Renderer::drawWorkpiece(std::shared_ptr<geometry::PointCloud> workpiece)
+void Renderer::drawWorkpiece(const geometry::PointCloud& workpiece)
 {
-    if (!workpiece)
-    {
-        ERROR("workpiece is null ptr");
-    }
+    workpiece.copyTo(m_pointCloudSnapshot);
 
-    // Ensure lighting doesn't override our normal-to-RGB mapping
     glDisable(GL_LIGHTING);
-
-    // 1. Draw Points with Normal-to-RGB color mapping
     glPointSize(3.0f);
     glBegin(GL_POINTS);
 
-    // We take a snapshot of the tool model's vertices to minimize time spent in the critical
-    // rendering loop
-    static std::vector<transmuter::geometry::Vertex> workPieceRenderSnapshot;
-    workpiece->copyTo(workPieceRenderSnapshot);
-
-    for (const auto& v : workPieceRenderSnapshot)
+    for (const auto& v : m_pointCloudSnapshot)
     {
-        // Absolute value of normals maps well to RGB for visual debugging
-        // |X| -> Red, |Y| -> Green, |Z| -> Blue
+        // Keep the changing workpiece as the visually dominant shape.
         glColor3f(std::abs(v.normal.x()), std::abs(v.normal.y()), std::abs(v.normal.z()));
         glVertex3f(v.pos.x(), v.pos.y(), v.pos.z());
-    }
-    glEnd();
-
-    // 2. Draw Surface Normal "Needles"
-    glLineWidth(1.0f);
-    glBegin(GL_LINES);
-    for (const auto& v : workPieceRenderSnapshot)
-    {
-        glColor3f(std::abs(v.normal.x()), std::abs(v.normal.y()), std::abs(v.normal.z()));
-
-        glVertex3f(v.pos.x(), v.pos.y(), v.pos.z());
-
-        // Project a 5mm line segment along the normal vector
-        glVertex3f(v.pos.x() + v.normal.x() * 5.0f, v.pos.y() + v.normal.y() * 5.0f,
-                   v.pos.z() + v.normal.z() * 5.0f);
     }
     glEnd();
 }
 
-void Renderer::drawToolPath(std::shared_ptr<geometry::PointCloud> toolPath)
+void Renderer::drawToolPath(const geometry::PointCloud& toolPath)
 {
-    if (!toolPath)
-    {
-        ERROR("toolPath is null ptr");
-    }
+    toolPath.copyTo(m_pointCloudSnapshot);
 
     glDisable(GL_LIGHTING);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glDepthMask(GL_FALSE);
+    glLineWidth(1.0f);
     glBegin(GL_LINE_STRIP);
 
-    // We take a snapshot of the tool model's vertices to minimize time spent in the critical
-    // rendering loop
-    static std::vector<transmuter::geometry::Vertex> toolPathRenderSnapshot;
-    toolPath->copyTo(toolPathRenderSnapshot);
-    for (const auto& v : toolPathRenderSnapshot)
+    for (const auto& v : m_pointCloudSnapshot)
     {
-        // Path normals also get colors so we can see tool orientation history
-        glColor3f(v.normal.x() * 0.5f + 0.5f, v.normal.y() * 0.5f + 0.5f,
-                  v.normal.z() * 0.5f + 0.5f);
+        glColor4f(0.35f, 0.75f, 0.85f, 0.10f);
         glVertex3f(v.pos.x(), v.pos.y(), v.pos.z());
     }
     glEnd();
-
-    glBegin(GL_LINES);
-    for (const auto& v : toolPathRenderSnapshot)
-    {
-        glColor3f(std::abs(v.normal.x()), std::abs(v.normal.y()), std::abs(v.normal.z()));
-
-        glVertex3f(v.pos.x(), v.pos.y(), v.pos.z());
-
-        // Project a 5mm line segment along the normal vector
-        glVertex3f(v.pos.x() + v.normal.x() * 5.0f, v.pos.y() + v.normal.y() * 5.0f,
-                   v.pos.z() + v.normal.z() * 5.0f);
-    }
-    glEnd();
+    glDepthMask(GL_TRUE);
+    glDisable(GL_BLEND);
 }
 
-void Renderer::drawTool(std::shared_ptr<geometry::PointCloud> toolModel, const Eigen::Vector3f& pos,
+void Renderer::drawTool(const geometry::PointCloud& toolModel, const Eigen::Vector3f& pos,
                         const Eigen::Vector3f& normal)
 {
-    if (!toolModel)
-    {
-        ERROR("toolModel is null ptr");
-    }
+    toolModel.copyTo(m_pointCloudSnapshot);
 
     glPushMatrix();
     glTranslatef(pos.x(), pos.y(), pos.z());
@@ -205,11 +162,7 @@ void Renderer::drawTool(std::shared_ptr<geometry::PointCloud> toolModel, const E
     glBegin(GL_POINTS);
     glColor3f(1.0f, 0.1f, 0.1f);  // Solid Red for the tool as requested
 
-    // We take a snapshot of the tool model's vertices to minimize time spent in the critical
-    // rendering loop
-    static std::vector<transmuter::geometry::Vertex> toolModelRenderSnapshot;
-    toolModel->copyTo(toolModelRenderSnapshot);
-    for (const auto& v : toolModelRenderSnapshot)
+    for (const auto& v : m_pointCloudSnapshot)
     {
         glVertex3f(v.pos.x(), v.pos.y(), v.pos.z());
     }
@@ -217,50 +170,52 @@ void Renderer::drawTool(std::shared_ptr<geometry::PointCloud> toolModel, const E
     glPopMatrix();
 }
 
-void Renderer::drawStock(std::shared_ptr<geometry::PointCloud> stock)
+void Renderer::drawStock(const geometry::PointCloud& stock)
 {
-    if (!stock)
-    {
-        ERROR("stock is null ptr");
-    }
+    stock.copyTo(m_pointCloudSnapshot);
 
     glDisable(GL_LIGHTING);
-    glPointSize(2.0f);  // Smaller points for boundaries
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glDepthMask(GL_FALSE);
+    glPointSize(1.0f);
     glBegin(GL_POINTS);
 
-    // Faint gray color for stock boundary
-    glColor3f(0.2f, 0.2f, 0.2f);
+    glColor4f(0.55f, 0.55f, 0.55f, 0.025f);
 
-    static std::vector<transmuter::geometry::Vertex> stockRenderSnapshot;
-    stock->copyTo(stockRenderSnapshot);
-    for (const auto& v : stockRenderSnapshot)
+    // The stock may be volumetric, so draw a sparse reference instead of obscuring the workpiece.
+    for (size_t index = 0; index < m_pointCloudSnapshot.size(); index += 8)
     {
+        const auto& v = m_pointCloudSnapshot[index];
         glVertex3f(v.pos.x(), v.pos.y(), v.pos.z());
     }
     glEnd();
+    glDepthMask(GL_TRUE);
+    glDisable(GL_BLEND);
 }
 
-void Renderer::drawModel(std::shared_ptr<geometry::PointCloud> model)
+void Renderer::drawModel(const geometry::PointCloud& model)
 {
-    if (!model)
-    {
-        ERROR("model is null ptr");
-    }
+    model.copyTo(m_pointCloudSnapshot);
 
     glDisable(GL_LIGHTING);
-    glPointSize(2.0f);  // Smaller points for boundaries
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glDepthMask(GL_FALSE);
+    glDisable(GL_DEPTH_TEST);
+    glPointSize(3.0f);
     glBegin(GL_POINTS);
 
-    // Faint blue color for model boundary
-    glColor3f(0.3f, 0.3f, 1.0f);
+    glColor4f(1.0f, 0.85f, 0.05f, 0.85f);
 
-    static std::vector<transmuter::geometry::Vertex> modelRenderSnapshot;
-    model->copyTo(modelRenderSnapshot);
-    for (const auto& v : modelRenderSnapshot)
+    for (const auto& v : m_pointCloudSnapshot)
     {
         glVertex3f(v.pos.x(), v.pos.y(), v.pos.z());
     }
     glEnd();
+    glEnable(GL_DEPTH_TEST);
+    glDepthMask(GL_TRUE);
+    glDisable(GL_BLEND);
 }
 
 void Renderer::endFrame()

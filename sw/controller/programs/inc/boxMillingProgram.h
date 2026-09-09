@@ -25,14 +25,14 @@ class BoxMillingProgram : public ProgramIf
     void execute() override;
 
    private:
-    // Milling scene varialbes are passed and shared for visualization of the program.
+    // Milling scene variables are shared so generation and visualization observe the same state.
     transmuter::geometry::MillingScene createMillingScene();
     std::shared_ptr<transmuter::geometry::PointCloud>
         m_stock;  // The original shape before cutting starts.
     std::shared_ptr<transmuter::geometry::PointCloud>
         m_model;  // The desired model I want as end result.
     std::shared_ptr<transmuter::geometry::PointCloud>
-        m_workPiece;  // The actual state of the model during milling operation visualization.
+        m_workpiece;  // The actual state of the model during milling operation visualization.
     std::shared_ptr<transmuter::geometry::PointCloud> m_toolPath;  // The path the tool will take.
     std::shared_ptr<transmuter::geometry::PointCloud>
         m_toolModel;  // The model of the tool itself. For example a 3mm end mill would be a
