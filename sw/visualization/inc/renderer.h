@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "geometryIf.h"
 #include "pointCloud.h"
 
 namespace transmuter::visualization
@@ -23,25 +24,25 @@ class Renderer
     void endFrame();
     void handleScroll(double yoffset);
 
-    void drawWorkpiece(const geometry::PointCloud& workpiece);
+    void drawWorkpiece(const geometry::GeometryIf& workpiece);
     void drawToolPath(const geometry::PointCloud& toolPath);
-    void drawTool(const geometry::PointCloud& toolModel, const Eigen::Vector3f& pos,
+    void drawTool(const geometry::GeometryIf& toolModel, const Eigen::Vector3f& pos,
                   const Eigen::Vector3f& normal);
-    void drawStock(const geometry::PointCloud& stock);
-    void drawModel(const geometry::PointCloud& model);
+    void drawStock(const geometry::GeometryIf& stock);
+    void drawModel(const geometry::GeometryIf& model);
 
    private:
     void handleInput();
 
-    GLFWwindow* m_window;
+    GLFWwindow* m_window = nullptr;
     int m_width;
     int m_height;
     float m_rotX;
     float m_rotY;
     float m_zoom = -300.0f;
 
-    double m_lastMouseX;
-    double m_lastMouseY;
+    double m_lastMouseX = 0.0;
+    double m_lastMouseY = 0.0;
     std::vector<geometry::Vertex> m_pointCloudSnapshot;
 };
 

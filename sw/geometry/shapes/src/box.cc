@@ -1,7 +1,10 @@
 #include "box.h"
 
 #include <algorithm>
-#include <memory>  // Required for std::shared_ptr
+#include <cstddef>
+#include <memory>
+
+#include "trace.h"
 
 namespace transmuter::geometry::shapes
 {
@@ -9,68 +12,68 @@ namespace transmuter::geometry::shapes
 namespace
 {
 
-/**
- * @brief Updated helper to accept PointCloud by pointer/reference
- */
+void validateBox(const Eigen::Vector3f& dimensions, float density)
+{
+    if ((dimensions.array() <= 0.0f).any() || density <= 0.0f)
+    {
+        ERROR("Box dimensions and density must be greater than zero.");
+    }
+}
+
 void addFace(PointCloud& cloud, const Eigen::Vector3f& center, const Eigen::Vector3f& uDir,
              float uLen, const Eigen::Vector3f& vDir, float vLen, const Eigen::Vector3f& normal,
              float density)
 {
-    int uSteps = static_cast<int>(std::max(1.0f, uLen / density));
-    int vSteps = static_cast<int>(std::max(1.0f, vLen / density));
+    const int uSteps = static_cast<int>(std::max(1.0f, uLen / density));
+    const int vSteps = static_cast<int>(std::max(1.0f, vLen / density));
 
     for (int i = 0; i <= uSteps; ++i)
     {
         for (int j = 0; j <= vSteps; ++j)
         {
-            float uFrac = (float(i) / uSteps - 0.5f);
-            float vFrac = (float(j) / vSteps - 0.5f);
+            const float uFraction = static_cast<float>(i) / uSteps - 0.5f;
+            const float vFraction = static_cast<float>(j) / vSteps - 0.5f;
 
-            Vertex vtx;
-            vtx.pos = center + (uFrac * uLen * uDir) + (vFrac * vLen * vDir);
-            vtx.normal = normal;
-
-            cloud.addVertex(vtx);
+            Vertex vertex;
+            vertex.pos = center + uFraction * uLen * uDir + vFraction * vLen * vDir;
+            vertex.normal = normal;
+            cloud.addVertex(vertex);
         }
     }
 }
 
-}  // anonymous namespace
+}  // namespace
 
 std::shared_ptr<PointCloud> Box::generate(const Eigen::Vector3f& dimensions, float density)
 {
-    const float w = dimensions.x();
-    const float h = dimensions.y();
-    const float d = dimensions.z();
+    validateBox(dimensions, density);
+    const float width = dimensions.x();
+    const float height = dimensions.y();
+    const float depth = dimensions.z();
 
-    int uStepsW = static_cast<int>(std::max(1.0f, w / density)) + 1;
-    int vStepsH = static_cast<int>(std::max(1.0f, h / density)) + 1;
-    int uStepsD = static_cast<int>(std::max(1.0f, d / density)) + 1;
+    const size_t widthSteps =
+        static_cast<size_t>(std::max(1.0f, width / density)) + 1;
+    const size_t heightSteps =
+        static_cast<size_t>(std::max(1.0f, height / density)) + 1;
+    const size_t depthSteps =
+        static_cast<size_t>(std::max(1.0f, depth / density)) + 1;
+    const size_t pointCapacity =
+        2 * (widthSteps * heightSteps + depthSteps * heightSteps + widthSteps * depthSteps);
 
-    size_t total_points = (uStepsW * vStepsH * 2) +  // Front/Back
-                          (uStepsD * vStepsH * 2) +  // Left/Right
-                          (uStepsW * uStepsD * 2);   // Top/Bottom
-
-    // 1. Instantiate the PointCloud as a shared_ptr
-    auto cloud = std::make_shared<PointCloud>();
-    cloud->reserve(total_points);
-
-    // 2. Pass the dereferenced pointer to addFace
-    // Front (Z+) / Back (Z-)
-    addFace(*cloud, {0, 0, d / 2}, {1, 0, 0}, w, {0, 1, 0}, h, {0, 0, 1}, density);
-    addFace(*cloud, {0, 0, -d / 2}, {-1, 0, 0}, w, {0, 1, 0}, h, {0, 0, -1}, density);
-
-    // Right (X+) / Left (X-)
-    addFace(*cloud, {w / 2, 0, 0}, {0, 0, -1}, d, {0, 1, 0}, h, {1, 0, 0}, density);
-    addFace(*cloud, {-w / 2, 0, 0}, {0, 0, 1}, d, {0, 1, 0}, h, {-1, 0, 0}, density);
-
-    // Top (Y+) / Bottom (Y-)
-    addFace(*cloud, {0, h / 2, 0}, {1, 0, 0}, w, {0, 0, 1}, d, {0, 1, 0}, density);
-    addFace(*cloud, {0, -h / 2, 0}, {1, 0, 0}, w, {0, 0, -1}, d, {0, -1, 0}, density);
-
+    auto cloud = std::make_shared<PointCloud>(pointCapacity);
+    addFace(*cloud, {0, 0, depth / 2}, {1, 0, 0}, width, {0, 1, 0}, height,
+            {0, 0, 1}, density);
+    addFace(*cloud, {0, 0, -depth / 2}, {-1, 0, 0}, width, {0, 1, 0}, height,
+            {0, 0, -1}, density);
+    addFace(*cloud, {width / 2, 0, 0}, {0, 0, -1}, depth, {0, 1, 0}, height,
+            {1, 0, 0}, density);
+    addFace(*cloud, {-width / 2, 0, 0}, {0, 0, 1}, depth, {0, 1, 0}, height,
+            {-1, 0, 0}, density);
+    addFace(*cloud, {0, height / 2, 0}, {1, 0, 0}, width, {0, 0, 1}, depth,
+            {0, 1, 0}, density);
+    addFace(*cloud, {0, -height / 2, 0}, {1, 0, 0}, width, {0, 0, -1}, depth,
+            {0, -1, 0}, density);
     cloud->finalize();
-
-    // 3. Return the shared_ptr (this is efficient and avoids the mutex copy error)
     return cloud;
 }
 

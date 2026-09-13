@@ -3,24 +3,26 @@
 
 #include <memory>
 
+#include "geometryIf.h"
 #include "pointCloud.h"
 
 namespace transmuter::geometry
 {
+
 struct MillingScene
 {
     // Immutable shape inputs for this scene. A local stock may be an extracted, already-machined
     // section of a larger workpiece.
-    std::shared_ptr<const geometry::PointCloud> stock;
-    std::shared_ptr<const geometry::PointCloud> model;
+    std::shared_ptr<const GeometryIf> stock;
+    std::shared_ptr<const GeometryIf> model;
 
     // Shared live state used by execution and visualization.
-    std::shared_ptr<geometry::PointCloud>
-        workpiece;  // The current state of the workpiece, updated after each milling step
-    std::shared_ptr<geometry::PointCloud> toolPath;   // The complete path that the tool will follow
+    std::shared_ptr<GeometryIf> workpiece;
+    std::shared_ptr<PointCloud> toolPath;
 
     // The tool geometry is also an immutable input to the operation.
-    std::shared_ptr<const geometry::PointCloud> toolModel;
+    std::shared_ptr<const GeometryIf> toolModel;
 };
+
 }  // namespace transmuter::geometry
 #endif  // TRANSMUTER_GEOMETRY_MILLING_SCENE_H

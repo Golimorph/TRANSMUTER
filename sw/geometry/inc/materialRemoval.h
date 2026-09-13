@@ -1,37 +1,30 @@
 #ifndef TRANSMUTER_GEOMETRY_MATERIAL_REMOVAL_H
 #define TRANSMUTER_GEOMETRY_MATERIAL_REMOVAL_H
 
-#include <cstddef>
+#include <memory>
 #include <vector>
 
-#include "pointCloud.h"
+#include "geometryIf.h"
+#include "vertex.h"
 
 namespace transmuter::geometry
 {
 
 /**
- * Applies tool poses to a mutable workpiece point cloud.
- *
- * Tool models use local +Z as their axis. Tool-path normals rotate that axis into world space,
- * which keeps this interface usable for both three-axis and future five-axis paths.
+ * Representation-independent material subtraction along a sequence of tool poses.
  */
-class MaterialRemoval
+class MaterialRemovalIf
 {
    public:
-    explicit MaterialRemoval(const PointCloud& toolModel);
+    virtual ~MaterialRemovalIf() = default;
 
-    size_t apply(PointCloud& workpiece, const std::vector<Vertex>& toolPoses) const;
-
-   private:
-    size_t removeVerticalMaterial(PointCloud& workpiece,
-                                  const std::vector<Vertex>& toolPoses) const;
-    size_t removeOrientedMaterial(PointCloud& workpiece,
-                                  const std::vector<Vertex>& toolPoses) const;
-
-    float m_toolRadius = 0.0f;
-    float m_toolMinimumLocalZ = 0.0f;
-    float m_toolMaximumLocalZ = 0.0f;
+    virtual void apply(GeometryIf& workpiece,
+                       const std::vector<Vertex>& toolPoses) const = 0;
 };
+
+/** Creates material removal compatible with the workpiece and tool representations. */
+std::unique_ptr<MaterialRemovalIf> createMaterialRemoval(const GeometryIf& workpiece,
+                                                         const GeometryIf& toolModel);
 
 }  // namespace transmuter::geometry
 

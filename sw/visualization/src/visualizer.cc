@@ -21,7 +21,7 @@ Visualizer::Visualizer(int w, int h, const std::string& title,
       m_config(config)
 {
     validateInputs();
-    m_materialRemoval = std::make_unique<geometry::MaterialRemoval>(*p_toolModel);
+    m_materialRemoval = geometry::createMaterialRemoval(*p_workpiece, *p_toolModel);
 
     INFO("Visualizer: Animation engine ready.");
     refresh();
@@ -104,7 +104,7 @@ bool Visualizer::refresh()
     m_renderer.drawStock(*p_stock);
     m_renderer.drawWorkpiece(*p_workpiece);
     m_renderer.drawToolPath(*p_toolPath);
-    m_renderer.drawModel(*p_model);
+    //m_renderer.drawModel(*p_model);
 
     if (m_playback.started && !p_toolPath->isEmpty())
     {
@@ -195,29 +195,26 @@ geometry::Vertex Visualizer::interpolateToolPose(size_t upperIndex, double dista
     }
 
     const size_t lowerIndex = upperIndex - 1;
-    const double segmentLength = m_playback.cumulativeDistances[upperIndex] -
-                                 m_playback.cumulativeDistances[lowerIndex];
-    const double distanceAlongSegment =
-        distance - m_playback.cumulativeDistances[lowerIndex];
-    const float interpolation =
-        segmentLength > 0.0 ? static_cast<float>(distanceAlongSegment / segmentLength) : 0.0f;
+    const double segmentStart = m_playback.cumulativeDistances[lowerIndex];
+    const double segmentLength = m_playback.cumulativeDistances[upperIndex] - segmentStart;
+    const float factor = segmentLength > 0.0
+                             ? static_cast<float>((distance - segmentStart) / segmentLength)
+                             : 0.0f;
 
     geometry::Vertex result;
-    result.pos = m_playback.toolPath[lowerIndex].pos * (1.0f - interpolation) +
-                 m_playback.toolPath[upperIndex].pos * interpolation;
-    result.normal = m_playback.toolPath[lowerIndex].normal * (1.0f - interpolation) +
-                    m_playback.toolPath[upperIndex].normal * interpolation;
-    if (result.normal.isZero())
+    result.pos = m_playback.toolPath[lowerIndex].pos +
+                 factor * (m_playback.toolPath[upperIndex].pos -
+                           m_playback.toolPath[lowerIndex].pos);
+    const Eigen::Vector3f& lower = m_playback.toolPath[upperIndex - 1].normal;
+    const Eigen::Vector3f& upper = m_playback.toolPath[upperIndex].normal;
+    result.normal = lower + factor * (upper - lower);
+    if (!result.normal.isZero())
     {
-        result.normal = m_playback.toolPath[lowerIndex].normal;
-    }
-    if (result.normal.isZero())
-    {
-        result.normal = Eigen::Vector3f::UnitZ();
+        result.normal.normalize();
     }
     else
     {
-        result.normal.normalize();
+        result.normal = lower.isZero() ? Eigen::Vector3f::UnitZ() : lower.normalized();
     }
     return result;
 }

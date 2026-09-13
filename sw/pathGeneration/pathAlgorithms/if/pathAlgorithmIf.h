@@ -4,6 +4,7 @@
 #include <atomic>
 #include <memory>
 
+#include "geometryIf.h"
 #include "millingScene.h"
 #include "pathGeneratorConfig.h"
 #include "pathGenerationResult.h"
@@ -23,17 +24,16 @@ class PathAlgorithmIf
     {
         if (!m_stock)
         {
-            ERROR("stock is null ptr");
+            ERROR("stock is null");
         }
         if (!m_model)
         {
-            ERROR("model is null ptr");
+            ERROR("model is null");
         }
         if (!m_toolModel)
         {
-            ERROR("toolModel is null ptr");
+            ERROR("toolModel is null");
         }
-
         INFO("Path generation algorithm ready.");
     }
 
@@ -48,26 +48,26 @@ class PathAlgorithmIf
         std::shared_ptr<geometry::PointCloud> liveToolPath) = 0;
 
    protected:
-    const geometry::PointCloud& stock() const
+    const geometry::GeometryIf& stock() const
     {
         return *m_stock;
     }
 
-    const geometry::PointCloud& model() const
+    const geometry::GeometryIf& model() const
     {
         return *m_model;
     }
 
-    const geometry::PointCloud& toolModel() const
+    const geometry::GeometryIf& toolModel() const
     {
         return *m_toolModel;
     }
 
    private:
     // Retain the immutable inputs for the lifetime of the algorithm.
-    std::shared_ptr<const geometry::PointCloud> m_stock;
-    std::shared_ptr<const geometry::PointCloud> m_model;
-    std::shared_ptr<const geometry::PointCloud> m_toolModel;
+    std::shared_ptr<const geometry::GeometryIf> m_stock;
+    std::shared_ptr<const geometry::GeometryIf> m_model;
+    std::shared_ptr<const geometry::GeometryIf> m_toolModel;
 };
 
 }  // namespace transmuter::pathgenerator::algorithms

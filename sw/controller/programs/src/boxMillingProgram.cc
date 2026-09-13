@@ -13,7 +13,7 @@ namespace transmuter::controller::programs
 void BoxMillingProgram::execute()
 {
     INFO("Starting execution.");
-    auto millingScene = createMillingScene();
+    const auto millingScene = createMillingScene();
     auto millingEnvironment = createMillingEnvironment(millingScene);
 
     setState(ProgramState::RUNNING);
@@ -39,6 +39,7 @@ void BoxMillingProgram::execute()
                 break;
         }
     }
+
     if (getState() == ProgramState::RUNNING)
     {
         setState(ProgramState::FINISHED);
@@ -78,18 +79,17 @@ BoxMillingProgram::MillingEnvironment BoxMillingProgram::createMillingEnvironmen
 
     transmuter::pathgenerator::PathGeneratorConfig config{
         .algorithmType = transmuter::pathgenerator::AlgorithmType::THREE_AXIS_SPIRAL,
-        .direction = transmuter::pathgenerator::Direction::FORWARD,
         .pointSpacing = 2.0,
         .passSpacing = 2.0,
         .layerSpacing = 10.0,
     };
     transmuter::visualization::VisualizerConfig visualizerConfig{
-        .toolPathPlaybackDurationSeconds = 60.0,
+        .toolPathPlaybackDurationSeconds = 30.0,
     };
 
     return MillingEnvironment{
         .visualizer = transmuter::visualization::Visualizer(
-            1024, 768, "Transmuter: 5-Axis Path Simulation", millingScene, visualizerConfig),
+            102, 76, "Transmuter: 5-Axis Path Simulation", millingScene, visualizerConfig),
         .pathGenerator = transmuter::pathgenerator::PathGenerator(config, millingScene)};
 }
 

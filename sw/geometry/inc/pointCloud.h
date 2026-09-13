@@ -2,24 +2,25 @@
 #define TRANSMUTER_GEOMETRY_POINT_CLOUD_H
 
 #include <algorithm>
+#include <cstddef>
 #include <memory>
 #include <mutex>
 #include <utility>
 #include <vector>
 
-#include "trace.h"
+#include "geometryIf.h"
 #include "vertex.h"
 
 namespace transmuter::geometry
 {
 
 /**
- * @brief A container for 3D surface data.
+ * @brief A point-sampled implementation of GeometryIf.
  *
- * Optimized for high-density 5-axis toolpath generation.
- * Use reserve() to avoid reallocations during geometry parsing.
+ * Samples may describe a surface or a filled volume. Geometry consumers should depend on
+ * GeometryIf; direct point access is reserved for point-cloud backends and path storage.
  */
-class PointCloud
+class PointCloud : public GeometryIf
 {
    public:
     PointCloud() = default;
@@ -45,27 +46,10 @@ class PointCloud
         m_vertices.push_back(v);
     }
 
-    Vertex getVertex(size_t index) const
+    void copyTo(std::vector<Vertex>& output) const
     {
         std::lock_guard<std::mutex> lock(m_mutex);
-        if (index >= m_vertices.size())
-        {
-            ERROR("Vertex index out of bounds.");
-        }
-        return m_vertices[index];
-    }
-
-    // Thread-safe copy of vertex data for rendering
-    void copyTo(std::vector<Vertex>& outBuffer) const
-    {
-        std::lock_guard<std::mutex> lock(m_mutex);
-        outBuffer = m_vertices;  // Fast vector assignment/copy
-    }
-
-    size_t size() const
-    {
-        std::lock_guard<std::mutex> lock(m_mutex);
-        return m_vertices.size();
+        output = m_vertices;
     }
 
     void clear()
@@ -74,30 +58,32 @@ class PointCloud
         m_vertices.clear();
     }
 
-    /**
-     * @brief Remove every vertex accepted by predicate in one locked operation.
-     * @return The number of removed vertices.
-     */
+    /** @brief Remove every vertex accepted by predicate in one locked operation. */
     template <typename Predicate>
-    size_t eraseIf(Predicate&& predicate)
+    void eraseIf(Predicate&& predicate)
     {
         std::lock_guard<std::mutex> lock(m_mutex);
-        const size_t previousSize = m_vertices.size();
         m_vertices.erase(std::remove_if(m_vertices.begin(), m_vertices.end(),
                                         std::forward<Predicate>(predicate)),
                          m_vertices.end());
-        return previousSize - m_vertices.size();
     }
 
-    /**
-     * @brief Make an independent point-cloud snapshot.
-     */
-    std::shared_ptr<PointCloud> clone() const
+    /** @brief Make an independent geometry snapshot. */
+    std::shared_ptr<GeometryIf> clone() const override
     {
         auto result = std::make_shared<PointCloud>();
         std::lock_guard<std::mutex> lock(m_mutex);
         result->m_vertices = m_vertices;
         return result;
+    }
+
+    GeometryBounds bounds() const override;
+    float maximumDistanceFromAxis(const Eigen::Vector3f& axisPoint,
+                                  const Eigen::Vector3f& axisDirection) const override;
+
+    void copyVisualizationVertices(std::vector<Vertex>& output) const override
+    {
+        copyTo(output);
     }
 
     void finalize()

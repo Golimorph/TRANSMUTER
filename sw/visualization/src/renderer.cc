@@ -3,23 +3,22 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 
+#include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <numbers>
 
 #include "trace.h"
 
 namespace transmuter::visualization
 {
 
-// We use a static or global helper because GLFW is a C-API
-// and doesn't know about C++ 'this' pointers easily.
-static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+void scrollCallback(GLFWwindow* window, double, double yOffset)
 {
-    // Retrieve the Renderer instance attached to this window
-    Renderer* renderer = static_cast<Renderer*>(glfwGetWindowUserPointer(window));
+    auto* renderer = static_cast<Renderer*>(glfwGetWindowUserPointer(window));
     if (renderer)
     {
-        renderer->handleScroll(yoffset);
+        renderer->handleScroll(yOffset);
     }
 }
 
@@ -29,26 +28,20 @@ Renderer::Renderer(int width, int height, const std::string& title)
     if (!glfwInit())
     {
         ERROR("Renderer: GLFW Init Failed");
-        return;
     }
 
-    m_window = glfwCreateWindow(m_width, m_height, title.c_str(), NULL, NULL);
+    m_window = glfwCreateWindow(m_width, m_height, title.c_str(), nullptr, nullptr);
     if (!m_window)
     {
-        ERROR("Renderer: Window Creation Failed");
         glfwTerminate();
-        return;
+        ERROR("Renderer: Window Creation Failed");
     }
 
     glfwMakeContextCurrent(m_window);
-
-    // Industrial "Studio Gray" background
     glClearColor(0.12f, 0.12f, 0.14f, 1.0f);
     glEnable(GL_DEPTH_TEST);
-
-    // Scroll callback for zooming
-    glfwSetWindowUserPointer(m_window, this);  // Attach 'this' so the callback can find it
-    glfwSetScrollCallback(m_window, scroll_callback);
+    glfwSetWindowUserPointer(m_window, this);
+    glfwSetScrollCallback(m_window, scrollCallback);
 
     INFO("Renderer: OpenGL Legacy Pipeline initialized (" + std::to_string(width) + "x" +
          std::to_string(height) + ")");
@@ -56,40 +49,34 @@ Renderer::Renderer(int width, int height, const std::string& title)
 
 Renderer::~Renderer()
 {
-    if (m_window) glfwDestroyWindow(m_window);
+    if (m_window)
+    {
+        glfwDestroyWindow(m_window);
+    }
     glfwTerminate();
 }
 
 void Renderer::handleInput()
 {
-    double currentX, currentY;
+    double currentX = 0.0;
+    double currentY = 0.0;
     glfwGetCursorPos(m_window, &currentX, &currentY);
 
     if (glfwGetMouseButton(m_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
     {
-        // 1. Calculate how far the mouse moved since the last frame
-        float deltaX = static_cast<float>(currentX - m_lastMouseX);
-        float deltaY = static_cast<float>(currentY - m_lastMouseY);
-
-        // 2. Rotate based on that movement
-        // Sensitivity (0.5f) controls how fast it spins
+        const float deltaX = static_cast<float>(currentX - m_lastMouseX);
+        const float deltaY = static_cast<float>(currentY - m_lastMouseY);
         m_rotY += deltaX * 0.5f;
         m_rotX += deltaY * 0.5f;
     }
 
-    // 3. Always update the 'last' position so the next frame knows where we were
     m_lastMouseX = currentX;
     m_lastMouseY = currentY;
 }
 
-void Renderer::handleScroll(double yoffset)
+void Renderer::handleScroll(double yOffset)
 {
-    // Adjust sensitivity as needed (5.0f or 10.0f usually feels good)
-    m_zoom += static_cast<float>(yoffset) * 10.0f;
-
-    // Optional: Clamp the zoom so you don't fly inside the box or too far away
-    if (m_zoom > -10.0f) m_zoom = -10.0f;
-    if (m_zoom < -1000.0f) m_zoom = -1000.0f;
+    m_zoom = std::clamp(m_zoom + static_cast<float>(yOffset) * 10.0f, -1000.0f, -10.0f);
 }
 
 void Renderer::beginFrame()
@@ -108,9 +95,9 @@ void Renderer::beginFrame()
     glRotatef(m_rotY, 0.0f, 1.0f, 0.0f);
 }
 
-void Renderer::drawWorkpiece(const geometry::PointCloud& workpiece)
+void Renderer::drawWorkpiece(const geometry::GeometryIf& workpiece)
 {
-    workpiece.copyTo(m_pointCloudSnapshot);
+    workpiece.copyVisualizationVertices(m_pointCloudSnapshot);
 
     glDisable(GL_LIGHTING);
     glPointSize(3.0f);
@@ -146,18 +133,19 @@ void Renderer::drawToolPath(const geometry::PointCloud& toolPath)
     glDisable(GL_BLEND);
 }
 
-void Renderer::drawTool(const geometry::PointCloud& toolModel, const Eigen::Vector3f& pos,
+void Renderer::drawTool(const geometry::GeometryIf& toolModel, const Eigen::Vector3f& pos,
                         const Eigen::Vector3f& normal)
 {
-    toolModel.copyTo(m_pointCloudSnapshot);
+    toolModel.copyVisualizationVertices(m_pointCloudSnapshot);
 
     glPushMatrix();
     glTranslatef(pos.x(), pos.y(), pos.z());
 
-    Eigen::Vector3f zAxis(0.0f, 0.0f, 1.0f);
-    auto q = Eigen::Quaternionf::FromTwoVectors(zAxis, normal.normalized());
-    Eigen::AngleAxisf aa(q);
-    glRotatef(aa.angle() * 180.0f / M_PI, aa.axis().x(), aa.axis().y(), aa.axis().z());
+    const Eigen::Quaternionf rotation = Eigen::Quaternionf::FromTwoVectors(
+        Eigen::Vector3f::UnitZ(), normal.normalized());
+    const Eigen::AngleAxisf angleAxis(rotation);
+    const float angleDegrees = angleAxis.angle() * 180.0f / std::numbers::pi_v<float>;
+    glRotatef(angleDegrees, angleAxis.axis().x(), angleAxis.axis().y(), angleAxis.axis().z());
 
     glBegin(GL_POINTS);
     glColor3f(1.0f, 0.1f, 0.1f);  // Solid Red for the tool as requested
@@ -170,9 +158,9 @@ void Renderer::drawTool(const geometry::PointCloud& toolModel, const Eigen::Vect
     glPopMatrix();
 }
 
-void Renderer::drawStock(const geometry::PointCloud& stock)
+void Renderer::drawStock(const geometry::GeometryIf& stock)
 {
-    stock.copyTo(m_pointCloudSnapshot);
+    stock.copyVisualizationVertices(m_pointCloudSnapshot);
 
     glDisable(GL_LIGHTING);
     glEnable(GL_BLEND);
@@ -194,9 +182,9 @@ void Renderer::drawStock(const geometry::PointCloud& stock)
     glDisable(GL_BLEND);
 }
 
-void Renderer::drawModel(const geometry::PointCloud& model)
+void Renderer::drawModel(const geometry::GeometryIf& model)
 {
-    model.copyTo(m_pointCloudSnapshot);
+    model.copyVisualizationVertices(m_pointCloudSnapshot);
 
     glDisable(GL_LIGHTING);
     glEnable(GL_BLEND);

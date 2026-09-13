@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "geometryIf.h"
 #include "materialRemoval.h"
 #include "millingScene.h"
 #include "pointCloud.h"
@@ -66,13 +67,13 @@ class Visualizer
     geometry::Vertex getToolNode() const;
 
     Renderer m_renderer;
-    std::shared_ptr<const geometry::PointCloud> p_stock = nullptr;
-    std::shared_ptr<const geometry::PointCloud> p_model = nullptr;
-    std::shared_ptr<geometry::PointCloud> p_workpiece = nullptr;
+    std::shared_ptr<const geometry::GeometryIf> p_stock = nullptr;
+    std::shared_ptr<const geometry::GeometryIf> p_model = nullptr;
+    std::shared_ptr<geometry::GeometryIf> p_workpiece = nullptr;
     std::shared_ptr<geometry::PointCloud> p_toolPath = nullptr;
-    std::shared_ptr<const geometry::PointCloud> p_toolModel = nullptr;
+    std::shared_ptr<const geometry::GeometryIf> p_toolModel = nullptr;
     VisualizerConfig m_config;
-    std::unique_ptr<geometry::MaterialRemoval> m_materialRemoval;
+    std::unique_ptr<geometry::MaterialRemovalIf> m_materialRemoval;
     PlaybackState m_playback;
 };
 

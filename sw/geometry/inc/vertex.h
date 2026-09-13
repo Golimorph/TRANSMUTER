@@ -7,10 +7,7 @@ namespace transmuter::geometry
 {
 
 /**
- * Fundamental data unit for the 5-Axis engine.
- * Moved to shapes namespace to keep the geometry root clean.
- * * Using Eigen types ensures we can perform 4x4 matrix transforms
- * directly on the data points within the Cortex.
+ * A sampled position and normal used for geometry presentation and tool poses.
  */
 struct Vertex
 {

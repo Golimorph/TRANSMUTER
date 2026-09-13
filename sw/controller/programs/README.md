@@ -1,10 +1,12 @@
-High level workflow management calling other parts of the project.
+# Programs
 
-For example 
+Programs coordinate geometry creation, path generation, and visualization without implementing
+those concerns themselves. Scene solids are stored through `GeometryIf`, while a shared live tool
+path connects generation to visualization.
 
-1. tell geometry to fetch an stl file
-2. tell pathgen to make a path based on that geometry
-3. tell visualizer to show the tool path
+`BoxMillingProgram` is the current minimal workflow: create a solid cylindrical stock and box
+target, generate one 3-axis spiral path, then replay that path while material disappears from the
+visible workpiece.
 
-if - virtual interface for all programs
-inc / src the programs. One class for each program.
+The `if` directory contains the program interface; `inc` and `src` contain one implementation per
+workflow.
