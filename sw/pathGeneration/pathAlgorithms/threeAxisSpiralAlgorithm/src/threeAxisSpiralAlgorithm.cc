@@ -29,7 +29,14 @@ PathGenerationResult ThreeAxisSpiralAlgorithm::generate(
     std::atomic<bool>& stopRequested,
     std::shared_ptr<geometry::PointCloud> liveToolPath)
 {
-    ThreeAxisSpiralCuttingOperation cuttingOperation(stock(), model(), toolModel(), std::move(liveToolPath));
+    const CylindricalMillingVolume millingVolume = calculateMillingVolume(stock());
+    ThreeAxisSpiralCuttingOperation cuttingOperation({
+        .millingVolume = millingVolume,
+        .initialWorkpiece = stock().clone(),
+        .targetModel = model(),
+        .toolModel = toolModel(),
+        .liveToolPath = std::move(liveToolPath),
+    });
 
     const auto layers = cuttingOperation.layersFromTopToBottom(m_config.layerSpacing);
     const auto circles = cuttingOperation.concentricCircles(m_config.passSpacing);
@@ -43,7 +50,7 @@ PathGenerationResult ThreeAxisSpiralAlgorithm::generate(
         cuttingOperation.prepareToCut(layer);
         for (const auto& circle : circles)
         {
-            cuttingOperation.cutCounterClockwise(circle, m_config.pointSpacing);
+            cuttingOperation.cutCounterClockwiseAvoidingModel(circle, m_config.pointSpacing);
         }
 
         cuttingOperation.finishCurrentLayerAtCenter();
@@ -52,6 +59,17 @@ PathGenerationResult ThreeAxisSpiralAlgorithm::generate(
     INFO("SpiralAlgo: Generated " << cuttingOperation.completedLayerCount()
                                   << " counter-clockwise layers.");
     return cuttingOperation.takeResult();
+}
+
+CylindricalMillingVolume ThreeAxisSpiralAlgorithm::calculateMillingVolume(
+    const geometry::GeometryIf& stockGeometry) const
+{
+    const geometry::GeometryBounds bounds = stockGeometry.bounds();
+    return CylindricalMillingVolume{
+        .radius = stockGeometry.maximumDistanceFromAxis(
+            Eigen::Vector3f::Zero(), Eigen::Vector3f::UnitZ()),
+        .height = bounds.max.z() - bounds.min.z(),
+    };
 }
 
 }  // namespace transmuter::pathgenerator::algorithms

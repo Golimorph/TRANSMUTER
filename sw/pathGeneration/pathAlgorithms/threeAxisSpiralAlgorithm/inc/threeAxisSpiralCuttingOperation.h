@@ -14,10 +14,26 @@
 namespace transmuter::pathgenerator::algorithms
 {
 
+/** Size of the origin-centered work volume whose cylinder axis is +Z. */
+struct CylindricalMillingVolume
+{
+    float radius = 0.0f;
+    float height = 0.0f;
+};
+
 /** Owns the state and cutting mechanics for one three-axis spiral generation run. */
 class ThreeAxisSpiralCuttingOperation
 {
    public:
+    struct Inputs
+    {
+        CylindricalMillingVolume millingVolume;
+        std::shared_ptr<geometry::GeometryIf> initialWorkpiece;
+        const geometry::GeometryIf& targetModel;
+        const geometry::GeometryIf& toolModel;
+        std::shared_ptr<geometry::PointCloud> liveToolPath;
+    };
+
     struct Layer
     {
         float toolZ;
@@ -28,15 +44,12 @@ class ThreeAxisSpiralCuttingOperation
         float radius;
     };
 
-    ThreeAxisSpiralCuttingOperation(
-        const geometry::GeometryIf& stock, const geometry::GeometryIf& model,
-        const geometry::GeometryIf& tool,
-        std::shared_ptr<geometry::PointCloud> liveToolPath);
+    explicit ThreeAxisSpiralCuttingOperation(Inputs inputs);
 
     std::vector<Layer> layersFromTopToBottom(double layerSpacing) const;
     std::vector<Circle> concentricCircles(double passSpacing) const;
     void prepareToCut(const Layer& layer);
-    void cutCounterClockwise(const Circle& circle, double pointSpacing);
+    void cutCounterClockwiseAvoidingModel(const Circle& circle, double pointSpacing);
     void finishCurrentLayerAtCenter();
 
     size_t completedLayerCount() const;
@@ -49,12 +62,8 @@ class ThreeAxisSpiralCuttingOperation
         float minimumLocalZ;
     };
 
-    void setupGeneration(const geometry::GeometryIf& stock,
-                         const geometry::GeometryIf& model,
-                         const geometry::GeometryIf& tool,
-                         std::shared_ptr<geometry::PointCloud> liveToolPath);
+    void setupGeneration(Inputs inputs);
     VerticalToolEnvelope calculateToolEnvelope(const geometry::GeometryIf& tool) const;
-    float calculateOuterRadius(const geometry::GeometryIf& stock, float toolRadius) const;
     void moveToolToLayerHeightAvoidingModel(const Eigen::Vector2f& toolCenter);
     void retractToolToSafeHeight();
     void moveToolToNextLayerStart();
@@ -64,10 +73,9 @@ class ThreeAxisSpiralCuttingOperation
     std::shared_ptr<geometry::PointCloud> m_toolPath;
     std::unique_ptr<geometry::MaterialRemovalIf> m_materialRemoval;
     std::unique_ptr<geometry::VerticalToolClearanceIf> m_modelClearance;
-    geometry::GeometryBounds m_stockBounds;
+    CylindricalMillingVolume m_millingVolume;
     VerticalToolEnvelope m_tool;
     std::vector<geometry::Vertex> m_currentLayerCuttingPoses;
-    Eigen::Vector2f m_center = Eigen::Vector2f::Zero();
     float m_outerRadius = 0.0f;
     float m_safeTravelZ = 0.0f;
     float m_layerZ = 0.0f;

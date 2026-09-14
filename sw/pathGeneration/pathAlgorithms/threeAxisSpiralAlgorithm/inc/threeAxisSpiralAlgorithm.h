@@ -10,6 +10,8 @@
 namespace transmuter::pathgenerator::algorithms
 {
 
+struct CylindricalMillingVolume;
+
 class ThreeAxisSpiralAlgorithm : public PathAlgorithmIf
 {
    public:
@@ -22,6 +24,9 @@ class ThreeAxisSpiralAlgorithm : public PathAlgorithmIf
         std::shared_ptr<geometry::PointCloud> liveToolPath) override;
 
    private:
+    CylindricalMillingVolume calculateMillingVolume(
+        const geometry::GeometryIf& stockGeometry) const;
+
     PathGeneratorConfig m_config;
 };
 

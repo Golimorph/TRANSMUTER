@@ -10,11 +10,12 @@ for collision and material removal. They do not inspect point-cloud storage. The
 solid representation.
 
 Each algorithm has its own folder containing its public `inc` and private implementation `src`
-files. `ThreeAxisSpiralAlgorithm` is the small `PathAlgorithmIf` adapter and owns only its generic
-configuration. `ThreeAxisSpiralCuttingOperation` owns the state and mechanics of one generation
-run. Their interface makes the configuration mapping explicit: pass spacing divides a layer into
-concentric circles, point spacing samples each circle, and layer spacing selects the next cutting
-depth.
+files. `ThreeAxisSpiralAlgorithm` interprets generic scene geometry as an algorithm-specific
+cylindrical milling volume and coordinates its layers and circles.
+`ThreeAxisSpiralCuttingOperation` receives that explicit volume plus a local workpiece and owns the
+tool-motion, collision-avoidance, and material-removal mechanics for one generation run. Their
+interface makes the configuration mapping explicit: pass spacing divides a layer into concentric
+circles, point spacing samples each circle, and layer spacing selects the next cutting depth.
 
 The spiral algorithm's top-level workflow cuts counter-clockwise concentric circles from the stock
 edge to its center, retracts and moves safely to the next depth, and repeats. At every sampled pose,

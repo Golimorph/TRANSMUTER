@@ -23,34 +23,29 @@ constexpr auto PATH_PUBLICATION_PAUSE = std::chrono::milliseconds(2);
 
 }  // namespace
 
-ThreeAxisSpiralCuttingOperation::ThreeAxisSpiralCuttingOperation(
-    const geometry::GeometryIf& stock, const geometry::GeometryIf& model,
-    const geometry::GeometryIf& tool,
-    std::shared_ptr<geometry::PointCloud> liveToolPath)
+ThreeAxisSpiralCuttingOperation::ThreeAxisSpiralCuttingOperation(Inputs inputs)
 {
-    setupGeneration(stock, model, tool, std::move(liveToolPath));
+    setupGeneration(std::move(inputs));
 }
 
-void ThreeAxisSpiralCuttingOperation::setupGeneration(
-    const geometry::GeometryIf& stock, const geometry::GeometryIf& model,
-    const geometry::GeometryIf& tool,
-    std::shared_ptr<geometry::PointCloud> liveToolPath)
+void ThreeAxisSpiralCuttingOperation::setupGeneration(Inputs inputs)
 {
-    if (!liveToolPath)
+    if (!inputs.initialWorkpiece || !inputs.liveToolPath)
     {
-        ERROR("toolPath is null ptr");
+        ERROR("The cutting operation requires a workpiece and tool path.");
     }
 
-    m_toolPath = std::move(liveToolPath);
+    m_toolPath = std::move(inputs.liveToolPath);
     m_toolPath->clear();
-    m_workpiece = stock.clone();
-    m_materialRemoval = geometry::createMaterialRemoval(*m_workpiece, tool);
-    m_modelClearance = geometry::createVerticalToolClearance(model, tool);
-    m_stockBounds = stock.bounds();
-    m_tool = calculateToolEnvelope(tool);
-    m_center = (m_stockBounds.min.head<2>() + m_stockBounds.max.head<2>()) * 0.5f;
-    m_outerRadius = calculateOuterRadius(stock, m_tool.radius);
-    m_safeTravelZ = std::max(m_stockBounds.max.z(), model.bounds().max.z()) +
+    m_workpiece = std::move(inputs.initialWorkpiece);
+    m_materialRemoval = geometry::createMaterialRemoval(*m_workpiece, inputs.toolModel);
+    m_modelClearance =
+        geometry::createVerticalToolClearance(inputs.targetModel, inputs.toolModel);
+    m_millingVolume = inputs.millingVolume;
+    m_tool = calculateToolEnvelope(inputs.toolModel);
+    m_outerRadius = m_millingVolume.radius + m_tool.radius;
+    const float millingVolumeTop = m_millingVolume.height * 0.5f;
+    m_safeTravelZ = std::max(millingVolumeTop, inputs.targetModel.bounds().max.z()) +
                     m_modelClearance->geometryTolerance() + VERTICAL_CLEARANCE -
                     m_tool.minimumLocalZ;
 }
@@ -66,20 +61,14 @@ ThreeAxisSpiralCuttingOperation::calculateToolEnvelope(
     };
 }
 
-float ThreeAxisSpiralCuttingOperation::calculateOuterRadius(
-    const geometry::GeometryIf& stock, float toolRadius) const
-{
-    const Eigen::Vector3f axisPoint(m_center.x(), m_center.y(), 0.0f);
-    return stock.maximumDistanceFromAxis(axisPoint, Eigen::Vector3f::UnitZ()) + toolRadius;
-}
-
 std::vector<ThreeAxisSpiralCuttingOperation::Layer>
 ThreeAxisSpiralCuttingOperation::layersFromTopToBottom(
     double layerSpacing) const
 {
     const float layerStepDown = static_cast<float>(layerSpacing);
-    const float bottomLayerZ = m_stockBounds.min.z() - m_tool.minimumLocalZ;
-    float layerZ = m_stockBounds.max.z() - m_tool.minimumLocalZ;
+    const float halfHeight = m_millingVolume.height * 0.5f;
+    const float bottomLayerZ = -halfHeight - m_tool.minimumLocalZ;
+    float layerZ = halfHeight - m_tool.minimumLocalZ;
 
     std::vector<Layer> layers;
     while (true)
@@ -121,7 +110,7 @@ void ThreeAxisSpiralCuttingOperation::prepareToCut(const Layer& layer)
     m_layerZ = layer.toolZ;
 }
 
-void ThreeAxisSpiralCuttingOperation::cutCounterClockwise(
+void ThreeAxisSpiralCuttingOperation::cutCounterClockwiseAvoidingModel(
     const Circle& circle, double pointSpacing)
 {
     const float circumference = TWO_PI * circle.radius;
@@ -135,14 +124,14 @@ void ThreeAxisSpiralCuttingOperation::cutCounterClockwise(
         const float angle = TWO_PI * static_cast<float>(sample) /
                             static_cast<float>(sampleCount);
         const Eigen::Vector2f toolCenter =
-            m_center + Eigen::Vector2f(std::cos(angle), std::sin(angle)) * circle.radius;
+            Eigen::Vector2f(std::cos(angle), std::sin(angle)) * circle.radius;
         moveToolToLayerHeightAvoidingModel(toolCenter);
     }
 }
 
 void ThreeAxisSpiralCuttingOperation::finishCurrentLayerAtCenter()
 {
-    moveToolToLayerHeightAvoidingModel(m_center);
+    moveToolToLayerHeightAvoidingModel(Eigen::Vector2f::Zero());
     m_materialRemoval->apply(*m_workpiece, m_currentLayerCuttingPoses);
     m_currentLayerCuttingPoses.clear();
     ++m_completedLayerCount;
@@ -160,14 +149,13 @@ void ThreeAxisSpiralCuttingOperation::moveToolToLayerHeightAvoidingModel(
 
 void ThreeAxisSpiralCuttingOperation::retractToolToSafeHeight()
 {
-    appendPathPoint(Eigen::Vector3f(m_center.x(), m_center.y(), m_safeTravelZ));
+    appendPathPoint(Eigen::Vector3f(0.0f, 0.0f, m_safeTravelZ));
 }
 
 void ThreeAxisSpiralCuttingOperation::moveToolToNextLayerStart()
 {
-    appendPathPoint(
-        Eigen::Vector3f(m_center.x() + m_outerRadius, m_center.y(), m_safeTravelZ));
-    appendPathPoint(Eigen::Vector3f(m_center.x() + m_outerRadius, m_center.y(), m_layerZ));
+    appendPathPoint(Eigen::Vector3f(m_outerRadius, 0.0f, m_safeTravelZ));
+    appendPathPoint(Eigen::Vector3f(m_outerRadius, 0.0f, m_layerZ));
 }
 
 geometry::Vertex ThreeAxisSpiralCuttingOperation::appendPathPoint(
