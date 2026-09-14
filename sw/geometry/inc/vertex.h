@@ -11,8 +11,8 @@ namespace transmuter::geometry
  */
 struct Vertex
 {
-    Eigen::Vector3f pos;     // [x, y, z]
-    Eigen::Vector3f normal;  // [nx, ny, nz]
+    Eigen::Vector3d pos;     // [x, y, z]
+    Eigen::Vector3d normal;  // [nx, ny, nz]
 };
 
 }  // namespace transmuter::geometry

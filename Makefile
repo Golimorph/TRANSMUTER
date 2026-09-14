@@ -26,12 +26,14 @@ SRCS = sw/main.cc \
        $(wildcard sw/visualization/src/*.cc)
 
 OBJS = $(SRCS:.cc=.o)
+DEPS = $(OBJS:.o=.d)
 
 #Libraries
 LIBS = -lGL -lGLU -lGLEW -lglfw
 
 #Compilation flags
 CXXFLAGS = -std=c++23 -O3 -Wall -fno-exceptions $(INC)
+DEPFLAGS = -MMD -MP
 
 # Executable name
 TARGET = transmuter
@@ -44,8 +46,12 @@ $(TARGET): $(OBJS)
 	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS) $(LIBS)
 
 # Compile source files
+$(OBJS): Makefile
+
 %.o: %.cc
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) $(DEPFLAGS) -c $< -o $@
+
+-include $(DEPS)
 
 # Formatting target: Enforces Allman style via .clang-format
 format:
@@ -63,6 +69,6 @@ run: $(TARGET)
 
 # Cleanup
 clean:
-	rm -f $(OBJS) $(TARGET)
+	rm -f $(OBJS) $(DEPS) $(TARGET)
 
 .PHONY: all clean docs format

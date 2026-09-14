@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "geometryIf.h"
-#include "materialRemoval.h"
 #include "millingScene.h"
 #include "pointCloud.h"
 #include "renderer.h"
@@ -31,9 +30,7 @@ struct VisualizerConfig
 class Visualizer
 {
    public:
-    Visualizer(int w, int h, const std::string& title,
-               const transmuter::geometry::MillingScene& millingScene,
-               VisualizerConfig config = {});
+    Visualizer(int w, int h, const std::string& title, const transmuter::geometry::MillingScene& millingScene, VisualizerConfig config = {});
 
     /*! @brief Refreshes the visualization.
      * @return true if the visualization was updated. False if the window was closed.*/
@@ -73,7 +70,6 @@ class Visualizer
     std::shared_ptr<geometry::PointCloud> p_toolPath = nullptr;
     std::shared_ptr<const geometry::GeometryIf> p_toolModel = nullptr;
     VisualizerConfig m_config;
-    std::unique_ptr<geometry::MaterialRemovalIf> m_materialRemoval;
     PlaybackState m_playback;
 };
 

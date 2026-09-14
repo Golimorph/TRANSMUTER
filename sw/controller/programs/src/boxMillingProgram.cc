@@ -3,7 +3,6 @@
 #include "box.h"
 #include "cylinder.h"
 #include "endmill.h"
-#include "pathGeneratorConfig.h"
 #include "pointCloud.h"
 #include "trace.h"
 
@@ -51,17 +50,17 @@ transmuter::geometry::MillingScene BoxMillingProgram::createMillingScene()
 {
     INFO("Creating milling scene.");
 
-    m_stock = transmuter::geometry::shapes::Cylinder::generateSolid(100.0f, 200.0f, 5.0f);
+    m_stock = transmuter::geometry::shapes::Cylinder::generateSolid(100.0, 200.0, 5.0);
 
     // The stock remains an immutable reference. Cutting updates only the workpiece snapshot.
     m_workpiece = m_stock->clone();
 
-    Eigen::Vector3f dims(50.0f, 50.0f, 50.0f);
-    m_model = transmuter::geometry::shapes::Box::generate(dims, 5.0f);
+    Eigen::Vector3d dims(50.0, 50.0, 50.0);
+    m_model = transmuter::geometry::shapes::Box::generateSolid(dims, 5.0);
 
     m_toolPath = std::make_shared<transmuter::geometry::PointCloud>();
 
-    m_toolModel = transmuter::geometry::shapes::Endmill::generate(10.0f, 30.0f);
+    m_toolModel = transmuter::geometry::shapes::Endmill::generate(10.0, 30.0);
 
     return transmuter::geometry::MillingScene{
         .stock = m_stock,
@@ -72,25 +71,25 @@ transmuter::geometry::MillingScene BoxMillingProgram::createMillingScene()
     };
 }
 
-BoxMillingProgram::MillingEnvironment BoxMillingProgram::createMillingEnvironment(
-    const transmuter::geometry::MillingScene& millingScene) const
+BoxMillingProgram::MillingEnvironment BoxMillingProgram::createMillingEnvironment(const transmuter::geometry::MillingScene& millingScene) const
 {
     INFO("Creating milling environment.");
 
     transmuter::pathgenerator::PathGeneratorConfig config{
-        .algorithmType = transmuter::pathgenerator::AlgorithmType::THREE_AXIS_SPIRAL,
         .pointSpacing = 2.0,
         .passSpacing = 2.0,
         .layerSpacing = 10.0,
+        .geometryTolerance = 0.01,
     };
     transmuter::visualization::VisualizerConfig visualizerConfig{
         .toolPathPlaybackDurationSeconds = 30.0,
     };
 
-    return MillingEnvironment{
-        .visualizer = transmuter::visualization::Visualizer(
-            102, 76, "Transmuter: 5-Axis Path Simulation", millingScene, visualizerConfig),
-        .pathGenerator = transmuter::pathgenerator::PathGenerator(config, millingScene)};
+    return MillingEnvironment{.visualizer = transmuter::visualization::Visualizer(102, 76,
+                                  "Transmuter: 5-Axis Path Simulation", millingScene, visualizerConfig),
+        .pathGenerator = transmuter::pathgenerator::PathGenerator(
+            transmuter::pathgenerator::PathGenerator::AlgorithmType::THREE_AXIS_SPIRAL, config,
+            millingScene)};
 }
 
 }  // namespace transmuter::controller::programs

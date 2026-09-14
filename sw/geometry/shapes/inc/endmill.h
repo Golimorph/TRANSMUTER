@@ -3,7 +3,7 @@
 
 #include <memory>
 
-#include "pointCloud.h"
+#include "cylinder.h"
 
 namespace transmuter::geometry::shapes
 {
@@ -12,11 +12,11 @@ class Endmill
 {
    public:
     /**
-     * @brief Generates a point cloud for a flat-end mill.
-     * @param diameter Tool diameter (e.g., 4.0f)
+     * @brief Creates an analytic cylindrical model for a flat-end mill.
+     * @param diameter Tool diameter (e.g., 4.0)
      * @param length Visible length of the tool
      */
-    static std::shared_ptr<PointCloud> generate(float diameter, float length);
+    static std::shared_ptr<Cylinder> generate(double diameter, double length);
 };
 
 }  // namespace transmuter::geometry::shapes

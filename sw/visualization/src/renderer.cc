@@ -23,7 +23,7 @@ void scrollCallback(GLFWwindow* window, double, double yOffset)
 }
 
 Renderer::Renderer(int width, int height, const std::string& title)
-    : m_width(width), m_height(height), m_rotX(20.0f), m_rotY(45.0f)
+    : m_width(width), m_height(height), m_rotX(20.0), m_rotY(45.0)
 {
     if (!glfwInit())
     {
@@ -43,8 +43,8 @@ Renderer::Renderer(int width, int height, const std::string& title)
     glfwSetWindowUserPointer(m_window, this);
     glfwSetScrollCallback(m_window, scrollCallback);
 
-    INFO("Renderer: OpenGL Legacy Pipeline initialized (" + std::to_string(width) + "x" +
-         std::to_string(height) + ")");
+    INFO("Renderer: OpenGL Legacy Pipeline initialized (" + std::to_string(width) + "x" + std::to_string(height) +
+         ")");
 }
 
 Renderer::~Renderer()
@@ -64,10 +64,10 @@ void Renderer::handleInput()
 
     if (glfwGetMouseButton(m_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
     {
-        const float deltaX = static_cast<float>(currentX - m_lastMouseX);
-        const float deltaY = static_cast<float>(currentY - m_lastMouseY);
-        m_rotY += deltaX * 0.5f;
-        m_rotX += deltaY * 0.5f;
+        const double deltaX = currentX - m_lastMouseX;
+        const double deltaY = currentY - m_lastMouseY;
+        m_rotY += deltaX * 0.5;
+        m_rotX += deltaY * 0.5;
     }
 
     m_lastMouseX = currentX;
@@ -76,7 +76,7 @@ void Renderer::handleInput()
 
 void Renderer::handleScroll(double yOffset)
 {
-    m_zoom = std::clamp(m_zoom + static_cast<float>(yOffset) * 10.0f, -1000.0f, -10.0f);
+    m_zoom = std::clamp(m_zoom + yOffset * 10.0, -1000.0, -10.0);
 }
 
 void Renderer::beginFrame()
@@ -86,13 +86,13 @@ void Renderer::beginFrame()
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(45.0, (double)m_width / (double)m_height, 1.0, 1000.0);
+    gluPerspective(45.0, static_cast<double>(m_width) / m_height, 1.0, 1000.0);
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    glTranslatef(0.0f, 0.0f, m_zoom);
-    glRotatef(m_rotX, 1.0f, 0.0f, 0.0f);
-    glRotatef(m_rotY, 0.0f, 1.0f, 0.0f);
+    glTranslated(0.0, 0.0, m_zoom);
+    glRotated(m_rotX, 1.0, 0.0, 0.0);
+    glRotated(m_rotY, 0.0, 1.0, 0.0);
 }
 
 void Renderer::drawWorkpiece(const geometry::GeometryIf& workpiece)
@@ -106,8 +106,8 @@ void Renderer::drawWorkpiece(const geometry::GeometryIf& workpiece)
     for (const auto& v : m_pointCloudSnapshot)
     {
         // Keep the changing workpiece as the visually dominant shape.
-        glColor3f(std::abs(v.normal.x()), std::abs(v.normal.y()), std::abs(v.normal.z()));
-        glVertex3f(v.pos.x(), v.pos.y(), v.pos.z());
+        glColor3d(std::abs(v.normal.x()), std::abs(v.normal.y()), std::abs(v.normal.z()));
+        glVertex3d(v.pos.x(), v.pos.y(), v.pos.z());
     }
     glEnd();
 }
@@ -126,33 +126,32 @@ void Renderer::drawToolPath(const geometry::PointCloud& toolPath)
     for (const auto& v : m_pointCloudSnapshot)
     {
         glColor4f(0.35f, 0.75f, 0.85f, 0.10f);
-        glVertex3f(v.pos.x(), v.pos.y(), v.pos.z());
+        glVertex3d(v.pos.x(), v.pos.y(), v.pos.z());
     }
     glEnd();
     glDepthMask(GL_TRUE);
     glDisable(GL_BLEND);
 }
 
-void Renderer::drawTool(const geometry::GeometryIf& toolModel, const Eigen::Vector3f& pos,
-                        const Eigen::Vector3f& normal)
+void Renderer::drawTool(const geometry::GeometryIf& toolModel, const Eigen::Vector3d& pos, const Eigen::Vector3d& normal)
 {
     toolModel.copyVisualizationVertices(m_pointCloudSnapshot);
 
     glPushMatrix();
-    glTranslatef(pos.x(), pos.y(), pos.z());
+    glTranslated(pos.x(), pos.y(), pos.z());
 
-    const Eigen::Quaternionf rotation = Eigen::Quaternionf::FromTwoVectors(
-        Eigen::Vector3f::UnitZ(), normal.normalized());
-    const Eigen::AngleAxisf angleAxis(rotation);
-    const float angleDegrees = angleAxis.angle() * 180.0f / std::numbers::pi_v<float>;
-    glRotatef(angleDegrees, angleAxis.axis().x(), angleAxis.axis().y(), angleAxis.axis().z());
+    const Eigen::Quaterniond rotation = Eigen::Quaterniond::FromTwoVectors(Eigen::Vector3d::UnitZ(),
+        normal.normalized());
+    const Eigen::AngleAxisd angleAxis(rotation);
+    const double angleDegrees = angleAxis.angle() * 180.0 / std::numbers::pi;
+    glRotated(angleDegrees, angleAxis.axis().x(), angleAxis.axis().y(), angleAxis.axis().z());
 
     glBegin(GL_POINTS);
     glColor3f(1.0f, 0.1f, 0.1f);  // Solid Red for the tool as requested
 
     for (const auto& v : m_pointCloudSnapshot)
     {
-        glVertex3f(v.pos.x(), v.pos.y(), v.pos.z());
+        glVertex3d(v.pos.x(), v.pos.y(), v.pos.z());
     }
     glEnd();
     glPopMatrix();
@@ -175,7 +174,7 @@ void Renderer::drawStock(const geometry::GeometryIf& stock)
     for (size_t index = 0; index < m_pointCloudSnapshot.size(); index += 8)
     {
         const auto& v = m_pointCloudSnapshot[index];
-        glVertex3f(v.pos.x(), v.pos.y(), v.pos.z());
+        glVertex3d(v.pos.x(), v.pos.y(), v.pos.z());
     }
     glEnd();
     glDepthMask(GL_TRUE);
@@ -198,7 +197,7 @@ void Renderer::drawModel(const geometry::GeometryIf& model)
 
     for (const auto& v : m_pointCloudSnapshot)
     {
-        glVertex3f(v.pos.x(), v.pos.y(), v.pos.z());
+        glVertex3d(v.pos.x(), v.pos.y(), v.pos.z());
     }
     glEnd();
     glEnable(GL_DEPTH_TEST);

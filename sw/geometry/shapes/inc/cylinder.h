@@ -4,21 +4,24 @@
 #include <Eigen/Dense>
 #include <memory>
 
+#include "analyticShape.h"
 #include "pointCloud.h"
 #include "vertex.h"
 
 namespace transmuter::geometry::shapes
 {
 
-/**
- * @brief Generator for Cylinder-style workpieces.
- * This class provides static methods to generate a point cloud representing
- * a cylinder. It is designed for testing milling algorithms on curved surfaces.
- */
-class Cylinder
+/** Analytic cylinder along local +Z, with its base at z = 0. */
+class Cylinder final : public AnalyticShape
 {
    public:
-    Cylinder() = delete;
+    Cylinder(double radius, double height);
+
+    bool isInside(const Eigen::Vector3d& point) const override;
+    GeometryBounds bounds() const override;
+    double maximumDistanceFromAxis(const Eigen::Vector3d& axisPoint, const Eigen::Vector3d& axisDirection) const override;
+    std::shared_ptr<GeometryIf> clone() const override;
+    void copyVisualizationVertices(std::vector<Vertex>& output) const override;
 
     /**
      * @brief Generates the sampled boundary of a cylinder coaxial with +Z.
@@ -27,15 +30,17 @@ class Cylinder
      * @param density The distance between points on the surface (mm).
      * @return A PointCloud object populated with Vertices and Normals.
      */
-    static std::shared_ptr<PointCloud> generate(const float radius, const float height,
-                                                const float density);
+    static std::shared_ptr<PointCloud> generate(double radius, double height, double density);
 
     /**
      * @brief Generates points throughout the volume of a cylinder coaxial with +Z.
      * @param density Approximate spacing between volume samples (mm).
      */
-    static std::shared_ptr<PointCloud> generateSolid(const float radius, const float height,
-                                                     const float density);
+    static std::shared_ptr<PointCloud> generateSolid(double radius, double height, double density);
+
+   private:
+    double m_radius;
+    double m_height;
 };
 
 }  // namespace transmuter::geometry::shapes

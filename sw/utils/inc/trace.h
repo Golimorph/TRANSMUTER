@@ -9,29 +9,26 @@
 #include "traceInternal.h"
 
 // Helper to get only the filename from the full path
-#define __FILENAME__                                     \
-    (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 \
-                            : (strrchr(__FILE__, '\\') ? strrchr(__FILE__, '\\') + 1 : __FILE__))
+#define __FILENAME__ \
+    (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : (strrchr(__FILE__, '\\') ? strrchr(__FILE__, '\\') + 1 : __FILE__))
 
 #define SET_TRACE_MASK(mask) (transmuter::utils::currentTraceMask = (mask))
 
 // Level 0: ERROR (Always prints, then exits)
-#define ERROR(msg)                                                                           \
-    {                                                                                        \
-        std::stringstream ss;                                                                \
-        ss << " [ERROR] " << transmuter::utils::getTimestamp() << "[" << __FILENAME__ << ":" \
-           << __LINE__ << "] " << msg;                                                       \
-        transmuter::utils::writeToLog(ss.str(), true);                                       \
-        std::exit(EXIT_FAILURE);                                                             \
+#define ERROR(msg)                                                                                                       \
+    {                                                                                                                    \
+        std::stringstream ss;                                                                                            \
+        ss << " [ERROR] " << transmuter::utils::getTimestamp() << "[" << __FILENAME__ << ":" << __LINE__ << "] " << msg; \
+        transmuter::utils::writeToLog(ss.str(), true);                                                                   \
+        std::exit(EXIT_FAILURE);                                                                                         \
     }
 
 // Level 1: INFO (Always prints)
-#define INFO(msg)                                                                           \
-    {                                                                                       \
-        std::stringstream ss;                                                               \
-        ss << " [INFO] " << transmuter::utils::getTimestamp() << "[" << __FILENAME__ << ":" \
-           << __LINE__ << "] " << msg;                                                      \
-        transmuter::utils::writeToLog(ss.str(), false);                                     \
+#define INFO(msg)                                                                                                       \
+    {                                                                                                                   \
+        std::stringstream ss;                                                                                           \
+        ss << " [INFO] " << transmuter::utils::getTimestamp() << "[" << __FILENAME__ << ":" << __LINE__ << "] " << msg; \
+        transmuter::utils::writeToLog(ss.str(), false);                                                                 \
     }
 
 // Level 2+: TRACE_INFO (Prints only if bit is set in mask)

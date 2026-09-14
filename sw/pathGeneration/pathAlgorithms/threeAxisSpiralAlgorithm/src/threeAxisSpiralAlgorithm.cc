@@ -8,37 +8,27 @@
 namespace transmuter::pathgenerator::algorithms
 {
 
-ThreeAxisSpiralAlgorithm::ThreeAxisSpiralAlgorithm(
-    const transmuter::geometry::MillingScene& scene)
+ThreeAxisSpiralAlgorithm::ThreeAxisSpiralAlgorithm(const transmuter::geometry::MillingScene& scene)
     : PathAlgorithmIf(scene)
 {
 }
 
 void ThreeAxisSpiralAlgorithm::setConfig(const PathGeneratorConfig& config)
 {
-    if (config.pointSpacing <= 0.0 || config.passSpacing <= 0.0 ||
-        config.layerSpacing <= 0.0)
+    if (config.pointSpacing <= 0.0 || config.passSpacing <= 0.0 || config.layerSpacing <= 0.0 || config.geometryTolerance <= 0.0)
     {
-        ERROR("Path, pass, and layer spacing must be greater than zero.");
+        ERROR("Path, pass, layer spacing, and geometry tolerance must be greater than zero.");
     }
     m_config = config;
     INFO("SpiralAlgo: Configuration updated.");
 }
 
-PathGenerationResult ThreeAxisSpiralAlgorithm::generate(
-    std::atomic<bool>& stopRequested,
-    std::shared_ptr<geometry::PointCloud> liveToolPath)
+PathGenerationResult ThreeAxisSpiralAlgorithm::generate(std::atomic<bool>& stopRequested, std::shared_ptr<geometry::PointCloud> liveToolPath)
 {
-    const CylindricalMillingVolume millingVolume = calculateMillingVolume(stock());
-    ThreeAxisSpiralCuttingOperation cuttingOperation({
-        .millingVolume = millingVolume,
-        .initialWorkpiece = stock().clone(),
-        .targetModel = model(),
-        .toolModel = toolModel(),
-        .liveToolPath = std::move(liveToolPath),
-    });
+    ThreeAxisSpiralCuttingOperation cuttingOperation(
+        stock(), model(), toolModel(), m_config.geometryTolerance, std::move(liveToolPath));
 
-    const auto layers = cuttingOperation.layersFromTopToBottom(m_config.layerSpacing);
+    const auto layers = cuttingOperation.layers(m_config.layerSpacing);
     const auto circles = cuttingOperation.concentricCircles(m_config.passSpacing);
     for (const auto& layer : layers)
     {
@@ -56,20 +46,8 @@ PathGenerationResult ThreeAxisSpiralAlgorithm::generate(
         cuttingOperation.finishCurrentLayerAtCenter();
     }
 
-    INFO("SpiralAlgo: Generated " << cuttingOperation.completedLayerCount()
-                                  << " counter-clockwise layers.");
+    INFO("SpiralAlgo: Generated " << cuttingOperation.completedLayerCount() << " counter-clockwise layers.");
     return cuttingOperation.takeResult();
-}
-
-CylindricalMillingVolume ThreeAxisSpiralAlgorithm::calculateMillingVolume(
-    const geometry::GeometryIf& stockGeometry) const
-{
-    const geometry::GeometryBounds bounds = stockGeometry.bounds();
-    return CylindricalMillingVolume{
-        .radius = stockGeometry.maximumDistanceFromAxis(
-            Eigen::Vector3f::Zero(), Eigen::Vector3f::UnitZ()),
-        .height = bounds.max.z() - bounds.min.z(),
-    };
 }
 
 }  // namespace transmuter::pathgenerator::algorithms

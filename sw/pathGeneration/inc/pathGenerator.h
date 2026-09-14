@@ -7,7 +7,6 @@
 
 #include "millingScene.h"
 #include "pathAlgorithmIf.h"
-#include "pathGeneratorConfig.h"
 #include "pathGenerationResult.h"
 
 namespace transmuter::pathgenerator
@@ -16,8 +15,13 @@ namespace transmuter::pathgenerator
 class PathGenerator
 {
    public:
-    PathGenerator(PathGeneratorConfig config,
-                  const transmuter::geometry::MillingScene& millingScene);
+    /** Selects the concrete implementation constructed by PathGenerator. */
+    enum class AlgorithmType
+    {
+        THREE_AXIS_SPIRAL
+    };
+
+    PathGenerator(AlgorithmType algorithmType, PathGeneratorConfig config, const transmuter::geometry::MillingScene& millingScene);
     ~PathGenerator();
     void startGeneration();
     void stopGeneration();

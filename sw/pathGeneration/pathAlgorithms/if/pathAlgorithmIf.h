@@ -6,10 +6,22 @@
 
 #include "geometryIf.h"
 #include "millingScene.h"
-#include "pathGeneratorConfig.h"
 #include "pathGenerationResult.h"
 #include "pointCloud.h"
 #include "trace.h"
+
+namespace transmuter::pathgenerator
+{
+
+struct PathGeneratorConfig
+{
+    double pointSpacing;       // Maximum distance between consecutive tool-path samples.
+    double passSpacing;        // Distance between neighbouring passes on the same layer.
+    double layerSpacing;       // Distance between neighbouring depth layers.
+    double geometryTolerance;  // Smallest meaningful spatial distance in the simulated geometry.
+};
+
+}  // namespace transmuter::pathgenerator
 
 namespace transmuter::pathgenerator::algorithms
 {
@@ -18,9 +30,7 @@ class PathAlgorithmIf
 {
    public:
     explicit PathAlgorithmIf(const transmuter::geometry::MillingScene& millingScene)
-        : m_stock(millingScene.stock),
-          m_model(millingScene.model),
-          m_toolModel(millingScene.toolModel)
+        : m_stock(millingScene.stock), m_model(millingScene.model), m_toolModel(millingScene.toolModel)
     {
         if (!m_stock)
         {
@@ -43,9 +53,7 @@ class PathAlgorithmIf
     virtual void setConfig(const PathGeneratorConfig& config) = 0;
 
     // The supplied path is published live; the returned workpiece is published on completion.
-    virtual PathGenerationResult generate(
-        std::atomic<bool>& stopRequested,
-        std::shared_ptr<geometry::PointCloud> liveToolPath) = 0;
+    virtual PathGenerationResult generate(std::atomic<bool>& stopRequested, std::shared_ptr<geometry::PointCloud> liveToolPath) = 0;
 
    protected:
     const geometry::GeometryIf& stock() const

@@ -2,9 +2,11 @@ transmuter
 
 *.o
 *.a
+*.d
 *.so
 *.out
 **/*.o
+**/*.d
 sw/*.o
 
 .vscode/

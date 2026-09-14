@@ -32,8 +32,8 @@ inline std::string getTimestamp()
     lastPrintTime = std::chrono::steady_clock::now();
 
     std::ostringstream oss;
-    oss << "[" << std::put_time(&localTime, "%H:%M:%S") << "] " << "[Δ" << std::fixed
-        << std::setprecision(4) << std::chrono::duration<double>(delta).count() << "s] ";
+    oss << "[" << std::put_time(&localTime, "%H:%M:%S") << "] " << "[Δ" << std::fixed << std::setprecision(4)
+        << std::chrono::duration<double>(delta).count() << "s] ";
     //<< "[Thread ID:" << std::this_thread::get_id() << "]";
     return oss.str();
 }

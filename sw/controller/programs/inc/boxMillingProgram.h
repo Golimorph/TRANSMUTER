@@ -41,8 +41,7 @@ class BoxMillingProgram : public ProgramIf
         transmuter::pathgenerator::PathGenerator pathGenerator;
     };
 
-    MillingEnvironment createMillingEnvironment(
-        const transmuter::geometry::MillingScene& millingScene) const;
+    MillingEnvironment createMillingEnvironment(const transmuter::geometry::MillingScene& millingScene) const;
 };
 
 }  // namespace transmuter::controller::programs

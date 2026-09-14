@@ -1,9 +1,10 @@
 # Example shapes
 
-These generators create simple sampled geometries for demonstrations and algorithm development.
-They currently return `PointCloud` objects, which also satisfy the representation-independent
-`GeometryIf` contract.
+These shapes provide simple geometries for demonstrations and algorithm development. `Box` and
+the cylinder sampling factories return `PointCloud` objects, which satisfy the
+representation-independent `GeometryIf` contract.
 
-`Cylinder::generate` samples the boundary. `Cylinder::generateSolid` fills the cylinder volume and
-is therefore suitable for material-removal demonstrations. `Box` and `Endmill` currently generate
-surface samples.
+`Cylinder::generate` and `Box::generate` sample boundaries. Their `generateSolid` variants fill
+the corresponding volume and are suitable for point-cloud solid operations. A constructed
+`Cylinder` stores only its radius and height and answers containment analytically. `Endmill` uses
+this compact cylinder representation for the tool.

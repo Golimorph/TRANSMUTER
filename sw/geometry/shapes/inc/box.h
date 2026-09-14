@@ -27,7 +27,10 @@ class Box
      * @param density The distance between points on the surface (mm).
      * @return A PointCloud object populated with Vertices and Normals.
      */
-    static std::shared_ptr<PointCloud> generate(const Eigen::Vector3f& dimensions, float density);
+    static std::shared_ptr<PointCloud> generate(const Eigen::Vector3d& dimensions, double density);
+
+    /** Generate samples throughout the box volume for solid operations. */
+    static std::shared_ptr<PointCloud> generateSolid(const Eigen::Vector3d& dimensions, double density);
 };
 
 }  // namespace transmuter::geometry::shapes

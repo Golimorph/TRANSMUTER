@@ -6,47 +6,29 @@
 #include <vector>
 
 #include "geometryIf.h"
-#include "materialRemoval.h"
 #include "pathGenerationResult.h"
 #include "pointCloud.h"
-#include "verticalToolClearance.h"
 
 namespace transmuter::pathgenerator::algorithms
 {
-
-/** Size of the origin-centered work volume whose cylinder axis is +Z. */
-struct CylindricalMillingVolume
-{
-    float radius = 0.0f;
-    float height = 0.0f;
-};
 
 /** Owns the state and cutting mechanics for one three-axis spiral generation run. */
 class ThreeAxisSpiralCuttingOperation
 {
    public:
-    struct Inputs
-    {
-        CylindricalMillingVolume millingVolume;
-        std::shared_ptr<geometry::GeometryIf> initialWorkpiece;
-        const geometry::GeometryIf& targetModel;
-        const geometry::GeometryIf& toolModel;
-        std::shared_ptr<geometry::PointCloud> liveToolPath;
-    };
-
     struct Layer
     {
-        float toolZ;
+        double toolZ;
     };
 
     struct Circle
     {
-        float radius;
+        double radius;
     };
 
-    explicit ThreeAxisSpiralCuttingOperation(Inputs inputs);
+    ThreeAxisSpiralCuttingOperation(const geometry::GeometryIf& stock, const geometry::GeometryIf& model, const geometry::GeometryIf& tool, double geometryTolerance, std::shared_ptr<geometry::PointCloud> liveToolPath);
 
-    std::vector<Layer> layersFromTopToBottom(double layerSpacing) const;
+    std::vector<Layer> layers(double layerSpacing) const;
     std::vector<Circle> concentricCircles(double passSpacing) const;
     void prepareToCut(const Layer& layer);
     void cutCounterClockwiseAvoidingModel(const Circle& circle, double pointSpacing);
@@ -58,27 +40,34 @@ class ThreeAxisSpiralCuttingOperation
    private:
     struct VerticalToolEnvelope
     {
-        float radius;
-        float minimumLocalZ;
+        double radius;
+        double minimumLocalZ;
     };
 
-    void setupGeneration(Inputs inputs);
+    void setupGeneration(const geometry::GeometryIf& stock, const geometry::GeometryIf& model, const geometry::GeometryIf& tool, double geometryTolerance, std::shared_ptr<geometry::PointCloud> liveToolPath);
     VerticalToolEnvelope calculateToolEnvelope(const geometry::GeometryIf& tool) const;
-    void moveToolToLayerHeightAvoidingModel(const Eigen::Vector2f& toolCenter);
+    double calculateOuterRadius(const geometry::GeometryIf& stock, double toolRadius) const;
+    Eigen::Vector3d liftToAvoidModel(const Eigen::Vector3d& requestedPosition) const;
+    bool toolIntersectsModelAt(const Eigen::Vector3d& position) const;
+    Eigen::Affine3d toolTransform(const geometry::Vertex& pose) const;
+    void cutWorkpieceAtCurrentPoses();
+    void moveToolToLayerHeightAvoidingModel(const Eigen::Vector2d& toolCenter);
     void retractToolToSafeHeight();
     void moveToolToNextLayerStart();
-    geometry::Vertex appendPathPoint(const Eigen::Vector3f& position);
+    geometry::Vertex appendPathPoint(const Eigen::Vector3d& position);
 
     std::shared_ptr<geometry::GeometryIf> m_workpiece;
     std::shared_ptr<geometry::PointCloud> m_toolPath;
-    std::unique_ptr<geometry::MaterialRemovalIf> m_materialRemoval;
-    std::unique_ptr<geometry::VerticalToolClearanceIf> m_modelClearance;
-    CylindricalMillingVolume m_millingVolume;
+    const geometry::GeometryIf* m_modelGeometry = nullptr;
+    const geometry::GeometryIf* m_toolGeometry = nullptr;
+    geometry::GeometryBounds m_stockBounds;
     VerticalToolEnvelope m_tool;
     std::vector<geometry::Vertex> m_currentLayerCuttingPoses;
-    float m_outerRadius = 0.0f;
-    float m_safeTravelZ = 0.0f;
-    float m_layerZ = 0.0f;
+    Eigen::Vector2d m_center = Eigen::Vector2d::Zero();
+    double m_outerRadius = 0.0;
+    double m_safeToolOriginZ = 0.0;
+    double m_layerZ = 0.0;
+    double m_geometryTolerance = 0.0;
     size_t m_completedLayerCount = 0;
     size_t m_pointsSincePublicationPause = 0;
 };

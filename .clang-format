@@ -1,10 +1,31 @@
 ---
 Language: Cpp
 BasedOnStyle: Google
-# This is the "Allman" magic:
+
+# Structural Style & Indentation
 BreakBeforeBraces: Allman
 IndentWidth: 4
 ColumnLimit: 100
 AllowShortFunctionsOnASingleLine: false
 FixNamespaceComments: true
----
+
+# Return Types
+AlwaysBreakAfterReturnType: None
+
+# Force Function Parameters and Arguments on Single Lines
+AlignAfterOpenBracket: DontAlign
+BinPackArguments: true
+BinPackParameters: true
+AllowAllArgumentsOnNextLine: false
+AllowAllParametersOfDeclarationOnNextLine: false
+
+# High Penalties to Heavily Disincentivize Line Wrapping
+PenaltyBreakBeforeFirstCallParameter: 1000000
+PenaltyBreakOpenParenthesis: 1000000
+PenaltyBreakAssignment: 1000000
+PenaltyBreakTemplateDeclaration: 1000000
+PenaltyReturnTypeOnItsOwnLine: 1000000
+
+# Low Penalty for Overrunning Column Limit
+PenaltyExcessCharacter: 0
+...

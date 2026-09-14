@@ -7,22 +7,20 @@ Geometry implementations enforce their invariants when they are constructed. Onc
 published through `GeometryIf`, clients can treat it as valid and use only the
 representation-independent queries they need:
 
+- point containment;
+- transformed solid intersection;
+- combining and cutting solids at a supplied transform;
 - axis-aligned bounds;
 - maximum distance from an arbitrary axis;
 - independent cloning;
 - a sampled view for the current renderer.
 
-`PointCloud` is the first implementation. It remains useful for developing and visualizing milling
-algorithms, but it is not part of the solid-geometry contract used by path algorithms.
+`PointCloud` is the first mutable implementation. Its `cut` operation removes each sampled point
+which the transformed cutting geometry reports as inside. A batch overload applies a tool sweep in
+one spatially indexed pass. Its approximate `isInside` query treats the cloud's minimum
+point-to-point spacing as the sampling tolerance.
 
-Material removal and collision logic also live here:
-
-- `MaterialRemovalIf` subtracts a tool sweep from a mutable geometry;
-- `CollisionDetectorIf` performs general transformed-geometry collision queries;
-- `VerticalToolClearanceIf` lifts a supplied vertical tool pose only when it would intersect an
-  obstacle. It owns the representation-specific clearance calculation; path algorithms do not
-  inspect tool points or pass point-cloud dimensions into the query.
-
-Factory functions select the compatible backend. Today they select point-cloud implementations.
-A future mesh, voxel grid, spatially indexed cloud, or signed-distance field can add corresponding
-implementations without changing path-generation or visualization orchestration.
+Analytic tools derive from `AnalyticShape`. They answer containment queries directly from their small
+parameter set and deliberately reject `cut` and `combine`, because these immutable shapes are used
+as operands rather than mutable workpieces. `Cylinder` is the first analytic shape and is used for
+the end mill without first expanding the tool into a point cloud.
