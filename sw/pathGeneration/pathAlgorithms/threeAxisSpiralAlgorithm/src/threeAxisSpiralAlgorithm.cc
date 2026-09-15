@@ -23,7 +23,8 @@ void ThreeAxisSpiralAlgorithm::setConfig(const PathGeneratorConfig& config)
     INFO("SpiralAlgo: Configuration updated.");
 }
 
-PathGenerationResult ThreeAxisSpiralAlgorithm::generate(std::atomic<bool>& stopRequested, std::shared_ptr<geometry::PointCloud> liveToolPath)
+PathGenerationResult ThreeAxisSpiralAlgorithm::generate(
+    std::atomic<bool>& stopRequested, std::shared_ptr<geometry::ToolPathIf> liveToolPath)
 {
     ThreeAxisSpiralCuttingOperation cuttingOperation(
         stock(), model(), toolModel(), m_config.geometryTolerance, std::move(liveToolPath));

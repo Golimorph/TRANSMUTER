@@ -5,9 +5,8 @@ CXX = g++
 INC = -I/usr/include/eigen3 \
       -I./sw/controller/inc \
 	  -I./sw/controller/programs/if \
-	  -I./sw/controller/programs/inc \
-      -I./sw/geometry/inc \
-	  -I./sw/geometry/shapes/inc \
+      -I./sw/controller/programs/inc \
+      -I./sw/geometry/if \
       -I./sw/pathGeneration/inc \
 	  -I./sw/pathGeneration/pathAlgorithms/if \
 	  -I./sw/pathGeneration/pathAlgorithms/threeAxisSpiralAlgorithm/inc \
@@ -18,9 +17,11 @@ INC = -I/usr/include/eigen3 \
 # Source files
 SRCS = sw/main.cc \
        $(wildcard sw/controller/src/*.cc) \
-	   $(wildcard sw/controller/programs/src/*.cc) \
+       $(wildcard sw/controller/programs/src/*.cc) \
        $(wildcard sw/geometry/src/*.cc) \
-	   $(wildcard sw/geometry/shapes/src/*.cc) \
+	   $(wildcard sw/geometry/pointCloud/src/*.cc) \
+	   $(wildcard sw/geometry/shapes/analyticShapes/src/*.cc) \
+	   $(wildcard sw/geometry/shapes/pointCloudShapes/src/*.cc) \
        $(wildcard sw/pathGeneration/src/*.cc) \
 	   $(wildcard sw/pathGeneration/pathAlgorithms/*/src/*.cc) \
        $(wildcard sw/visualization/src/*.cc)

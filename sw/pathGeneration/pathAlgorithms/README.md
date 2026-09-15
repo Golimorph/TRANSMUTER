@@ -5,9 +5,8 @@ and tool inputs, and makes the generated outputs explicit through `generate` and
 `PathGenerationResult`.
 
 Algorithms ask `GeometryIf` for geometric properties and subtract posed tool geometry directly
-from their mutable workpiece snapshot. They do not inspect point-cloud storage. The one intentional
-`PointCloud` dependency is the live tool path, which is a sequence of tool poses rather than a
-solid representation.
+from their mutable workpiece snapshot. They publish ordered poses through `ToolPathIf` and do not
+inspect point-cloud storage.
 
 Each algorithm has its own folder containing its public `inc` and private implementation `src`
 files. `ThreeAxisSpiralAlgorithm` coordinates the configured layers and circles.

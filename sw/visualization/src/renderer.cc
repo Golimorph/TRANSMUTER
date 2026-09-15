@@ -112,7 +112,7 @@ void Renderer::drawWorkpiece(const geometry::GeometryIf& workpiece)
     glEnd();
 }
 
-void Renderer::drawToolPath(const geometry::PointCloud& toolPath)
+void Renderer::drawToolPath(const geometry::ToolPathIf& toolPath)
 {
     toolPath.copyTo(m_pointCloudSnapshot);
 

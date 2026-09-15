@@ -1,29 +1,25 @@
-#ifndef TRANSMUTER_GEOMETRY_SHAPES_BOX_H
-#define TRANSMUTER_GEOMETRY_SHAPES_BOX_H
+#ifndef TRANSMUTER_GEOMETRY_POINT_CLOUD_SHAPES_BOX_GENERATOR_H
+#define TRANSMUTER_GEOMETRY_POINT_CLOUD_SHAPES_BOX_GENERATOR_H
 
 #include <Eigen/Dense>
 #include <memory>
 
-#include "pointCloud.h"
-#include "vertex.h"
+#include "../../../pointCloud/inc/pointCloud.h"
 
-namespace transmuter::geometry::shapes
+namespace transmuter::geometry::pointcloudshapes
 {
 
 /**
- * @brief Generator for Box-style workpieces.
- * * This class provides static methods to generate a point cloud representing
- * a six-sided box. It is specifically designed to test the 5-axis
- * kinematics when encountering sharp 90-degree normal transitions.
+ * @brief Generates point-cloud boxes for visualization and solid operations.
  */
-class Box
+class BoxGenerator
 {
    public:
-    Box() = delete;
+    BoxGenerator() = delete;
 
     /**
      * @brief Generates a point-cloud representation of a box.
-     * * @param dimensions Vector containing [width, height, depth].
+     * @param dimensions Vector containing [width, height, depth].
      * @param density The distance between points on the surface (mm).
      * @return A PointCloud object populated with Vertices and Normals.
      */
@@ -33,6 +29,6 @@ class Box
     static std::shared_ptr<PointCloud> generateSolid(const Eigen::Vector3d& dimensions, double density);
 };
 
-}  // namespace transmuter::geometry::shapes
+}  // namespace transmuter::geometry::pointcloudshapes
 
-#endif
+#endif  // TRANSMUTER_GEOMETRY_POINT_CLOUD_SHAPES_BOX_GENERATOR_H

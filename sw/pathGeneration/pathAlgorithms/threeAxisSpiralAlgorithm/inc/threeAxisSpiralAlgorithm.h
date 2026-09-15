@@ -5,7 +5,6 @@
 #include <memory>
 
 #include "pathAlgorithmIf.h"
-#include "pointCloud.h"
 
 namespace transmuter::pathgenerator::algorithms
 {
@@ -17,7 +16,8 @@ class ThreeAxisSpiralAlgorithm : public PathAlgorithmIf
     ~ThreeAxisSpiralAlgorithm() override = default;
 
     void setConfig(const PathGeneratorConfig& config) override;
-    PathGenerationResult generate(std::atomic<bool>& stopRequested, std::shared_ptr<geometry::PointCloud> liveToolPath) override;
+    PathGenerationResult generate(
+        std::atomic<bool>& stopRequested, std::shared_ptr<geometry::ToolPathIf> liveToolPath) override;
 
    private:
     PathGeneratorConfig m_config;

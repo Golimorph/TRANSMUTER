@@ -1,4 +1,4 @@
-#include "pointCloud.h"
+#include "../inc/pointCloud.h"
 
 #include <algorithm>
 #include <cmath>

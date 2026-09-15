@@ -1,7 +1,8 @@
 # Geometry
 
-The geometry module owns shape representations and operations on them. Code outside this module
-works with `GeometryIf` instead of assuming that a solid is stored as a point cloud.
+The geometry module owns shape representations, shape construction, and operations on them. Code
+outside this module includes only headers from `if` and works with `GeometryIf` rather than
+assuming that a solid is stored as a point cloud.
 
 Geometry implementations enforce their invariants when they are constructed. Once a geometry is
 published through `GeometryIf`, clients can treat it as valid and use only the
@@ -20,7 +21,15 @@ which the transformed cutting geometry reports as inside. A batch overload appli
 one spatially indexed pass. Its approximate `isInside` query treats the cloud's minimum
 point-to-point spacing as the sampling tolerance.
 
-Analytic tools derive from `AnalyticShape`. They answer containment queries directly from their small
-parameter set and deliberately reject `cut` and `combine`, because these immutable shapes are used
-as operands rather than mutable workpieces. `Cylinder` is the first analytic shape and is used for
-the end mill without first expanding the tool into a point cloud.
+The `if` directory is the module's public boundary. It contains `GeometryIf`, `ToolPathIf`, shared
+value types, `MillingScene`, and `GeometryFactory`. The factory provides typed creation methods and
+returns interface pointers, so callers cannot depend on concrete representations.
+
+`PointCloud` is private implementation storage under `pointCloud`. Concrete shape construction is
+private under `shapes` and divided by representation:
+
+- `shapes/analyticShapes` contains immutable parameterized geometry such as the end-mill cylinder.
+- `shapes/pointCloudShapes` contains generators for sampled boxes, cylinders, dodecahedra, and tori.
+
+Analytic tools derive from `AnalyticShape` and answer containment directly from their parameters.
+Point-cloud generators keep sampling concerns outside those analytic implementations.

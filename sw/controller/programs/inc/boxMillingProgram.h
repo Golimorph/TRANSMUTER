@@ -6,8 +6,8 @@
 #include "geometryIf.h"
 #include "millingScene.h"
 #include "pathGenerator.h"
-#include "pointCloud.h"
 #include "programIf.h"
+#include "toolPathIf.h"
 #include "visualizer.h"
 
 namespace transmuter::controller::programs
@@ -32,7 +32,7 @@ class BoxMillingProgram : public ProgramIf
     std::shared_ptr<const transmuter::geometry::GeometryIf> m_stock;
     std::shared_ptr<const transmuter::geometry::GeometryIf> m_model;
     std::shared_ptr<transmuter::geometry::GeometryIf> m_workpiece;
-    std::shared_ptr<transmuter::geometry::PointCloud> m_toolPath;
+    std::shared_ptr<transmuter::geometry::ToolPathIf> m_toolPath;
     std::shared_ptr<const transmuter::geometry::GeometryIf> m_toolModel;
 
     struct MillingEnvironment

@@ -1,10 +1,10 @@
-#include "endmill.h"
+#include "../inc/endmill.h"
 
 #include <memory>
 
 #include "trace.h"
 
-namespace transmuter::geometry::shapes
+namespace transmuter::geometry::analyticshapes
 {
 
 std::shared_ptr<Cylinder> Endmill::generate(double diameter, double length)
@@ -17,4 +17,4 @@ std::shared_ptr<Cylinder> Endmill::generate(double diameter, double length)
     return std::make_shared<Cylinder>(diameter * 0.5, length);
 }
 
-}  // namespace transmuter::geometry::shapes
+}  // namespace transmuter::geometry::analyticshapes

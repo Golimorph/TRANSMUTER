@@ -9,8 +9,8 @@
 
 #include "geometryIf.h"
 #include "millingScene.h"
-#include "pointCloud.h"
 #include "renderer.h"
+#include "toolPathIf.h"
 
 namespace transmuter::visualization
 {
@@ -67,7 +67,7 @@ class Visualizer
     std::shared_ptr<const geometry::GeometryIf> p_stock = nullptr;
     std::shared_ptr<const geometry::GeometryIf> p_model = nullptr;
     std::shared_ptr<geometry::GeometryIf> p_workpiece = nullptr;
-    std::shared_ptr<geometry::PointCloud> p_toolPath = nullptr;
+    std::shared_ptr<geometry::ToolPathIf> p_toolPath = nullptr;
     std::shared_ptr<const geometry::GeometryIf> p_toolModel = nullptr;
     VisualizerConfig m_config;
     PlaybackState m_playback;

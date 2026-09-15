@@ -1,5 +1,5 @@
-#ifndef TRANSMUTER_GEOMETRY_SHAPES_VERTEX_H
-#define TRANSMUTER_GEOMETRY_SHAPES_VERTEX_H
+#ifndef TRANSMUTER_GEOMETRY_VERTEX_H
+#define TRANSMUTER_GEOMETRY_VERTEX_H
 
 #include <Eigen/Dense>
 
@@ -16,4 +16,4 @@ struct Vertex
 };
 
 }  // namespace transmuter::geometry
-#endif
+#endif  // TRANSMUTER_GEOMETRY_VERTEX_H

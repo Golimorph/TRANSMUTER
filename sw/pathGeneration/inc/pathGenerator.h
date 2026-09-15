@@ -34,7 +34,7 @@ class PathGenerator
     std::thread m_thread;
     std::atomic<bool> m_stopRequested{false};
     std::atomic<bool> m_isGenerating{false};
-    std::shared_ptr<transmuter::geometry::PointCloud> m_liveToolPath;
+    std::shared_ptr<transmuter::geometry::ToolPathIf> m_liveToolPath;
     PathGenerationResult m_result;
     std::atomic<bool> m_isResultReady{false};
 

@@ -7,7 +7,7 @@
 
 #include "geometryIf.h"
 #include "pathGenerationResult.h"
-#include "pointCloud.h"
+#include "toolPathIf.h"
 
 namespace transmuter::pathgenerator::algorithms
 {
@@ -26,7 +26,9 @@ class ThreeAxisSpiralCuttingOperation
         double radius;
     };
 
-    ThreeAxisSpiralCuttingOperation(const geometry::GeometryIf& stock, const geometry::GeometryIf& model, const geometry::GeometryIf& tool, double geometryTolerance, std::shared_ptr<geometry::PointCloud> liveToolPath);
+    ThreeAxisSpiralCuttingOperation(const geometry::GeometryIf& stock, const geometry::GeometryIf& model,
+        const geometry::GeometryIf& tool, double geometryTolerance,
+        std::shared_ptr<geometry::ToolPathIf> liveToolPath);
 
     std::vector<Layer> layers(double layerSpacing) const;
     std::vector<Circle> concentricCircles(double passSpacing) const;
@@ -44,7 +46,9 @@ class ThreeAxisSpiralCuttingOperation
         double minimumLocalZ;
     };
 
-    void setupGeneration(const geometry::GeometryIf& stock, const geometry::GeometryIf& model, const geometry::GeometryIf& tool, double geometryTolerance, std::shared_ptr<geometry::PointCloud> liveToolPath);
+    void setupGeneration(const geometry::GeometryIf& stock, const geometry::GeometryIf& model,
+        const geometry::GeometryIf& tool, double geometryTolerance,
+        std::shared_ptr<geometry::ToolPathIf> liveToolPath);
     VerticalToolEnvelope calculateToolEnvelope(const geometry::GeometryIf& tool) const;
     double calculateOuterRadius(const geometry::GeometryIf& stock, double toolRadius) const;
     Eigen::Vector3d liftToAvoidModel(const Eigen::Vector3d& requestedPosition) const;
@@ -57,7 +61,7 @@ class ThreeAxisSpiralCuttingOperation
     geometry::Vertex appendPathPoint(const Eigen::Vector3d& position);
 
     std::shared_ptr<geometry::GeometryIf> m_workpiece;
-    std::shared_ptr<geometry::PointCloud> m_toolPath;
+    std::shared_ptr<geometry::ToolPathIf> m_toolPath;
     const geometry::GeometryIf* m_modelGeometry = nullptr;
     const geometry::GeometryIf* m_toolGeometry = nullptr;
     geometry::GeometryBounds m_stockBounds;

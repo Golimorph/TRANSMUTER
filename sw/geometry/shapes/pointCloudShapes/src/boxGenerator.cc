@@ -1,4 +1,4 @@
-#include "box.h"
+#include "../inc/boxGenerator.h"
 
 #include <algorithm>
 #include <cstddef>
@@ -6,7 +6,7 @@
 
 #include "trace.h"
 
-namespace transmuter::geometry::shapes
+namespace transmuter::geometry::pointcloudshapes
 {
 
 namespace
@@ -35,7 +35,7 @@ void addFace(PointCloud& cloud, const Eigen::Vector3d& center, const Eigen::Vect
             Vertex vertex;
             vertex.pos = center + uFraction * uLen * uDir + vFraction * vLen * vDir;
             vertex.normal = normal;
-            cloud.addVertex(vertex);
+            cloud.append(vertex);
         }
     }
 }
@@ -68,7 +68,7 @@ void addSolidSamples(PointCloud& cloud, const Eigen::Vector3d& dimensions, const
                 Vertex vertex;
                 vertex.pos = -halfDimensions + dimensions.cwiseProduct(fraction);
                 vertex.normal = nearestFaceNormal(vertex.pos, halfDimensions);
-                cloud.addVertex(vertex);
+                cloud.append(vertex);
             }
         }
     }
@@ -76,7 +76,7 @@ void addSolidSamples(PointCloud& cloud, const Eigen::Vector3d& dimensions, const
 
 }  // namespace
 
-std::shared_ptr<PointCloud> Box::generate(const Eigen::Vector3d& dimensions, double density)
+std::shared_ptr<PointCloud> BoxGenerator::generate(const Eigen::Vector3d& dimensions, double density)
 {
     validateBox(dimensions, density);
     const double width = dimensions.x();
@@ -99,7 +99,7 @@ std::shared_ptr<PointCloud> Box::generate(const Eigen::Vector3d& dimensions, dou
     return cloud;
 }
 
-std::shared_ptr<PointCloud> Box::generateSolid(const Eigen::Vector3d& dimensions, double density)
+std::shared_ptr<PointCloud> BoxGenerator::generateSolid(const Eigen::Vector3d& dimensions, double density)
 {
     validateBox(dimensions, density);
     const Eigen::Vector3i steps = solidSampleSteps(dimensions, density);
@@ -112,4 +112,4 @@ std::shared_ptr<PointCloud> Box::generateSolid(const Eigen::Vector3d& dimensions
     return cloud;
 }
 
-}  // namespace transmuter::geometry::shapes
+}  // namespace transmuter::geometry::pointcloudshapes

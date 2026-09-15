@@ -1,10 +1,10 @@
-#include "analyticShape.h"
+#include "../inc/analyticShape.h"
 
 #include <algorithm>
 
 #include "trace.h"
 
-namespace transmuter::geometry::shapes
+namespace transmuter::geometry::analyticshapes
 {
 
 bool AnalyticShape::intersects(const GeometryIf& geometry, const Eigen::Affine3d& geometryToLocalTransform) const
@@ -25,4 +25,4 @@ void AnalyticShape::cut(const GeometryIf&, const Eigen::Affine3d&)
     ERROR("Analytic shapes cannot be modified by cutting geometry.");
 }
 
-}  // namespace transmuter::geometry::shapes
+}  // namespace transmuter::geometry::analyticshapes

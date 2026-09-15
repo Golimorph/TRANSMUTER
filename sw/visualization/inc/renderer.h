@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "geometryIf.h"
-#include "pointCloud.h"
+#include "toolPathIf.h"
 
 namespace transmuter::visualization
 {
@@ -25,7 +25,7 @@ class Renderer
     void handleScroll(double yoffset);
 
     void drawWorkpiece(const geometry::GeometryIf& workpiece);
-    void drawToolPath(const geometry::PointCloud& toolPath);
+    void drawToolPath(const geometry::ToolPathIf& toolPath);
     void drawTool(const geometry::GeometryIf& toolModel, const Eigen::Vector3d& pos, const Eigen::Vector3d& normal);
     void drawStock(const geometry::GeometryIf& stock);
     void drawModel(const geometry::GeometryIf& model);

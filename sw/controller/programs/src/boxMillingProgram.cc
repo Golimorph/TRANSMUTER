@@ -1,9 +1,6 @@
 #include "boxMillingProgram.h"
 
-#include "box.h"
-#include "cylinder.h"
-#include "endmill.h"
-#include "pointCloud.h"
+#include "geometryFactory.h"
 #include "trace.h"
 
 namespace transmuter::controller::programs
@@ -50,17 +47,19 @@ transmuter::geometry::MillingScene BoxMillingProgram::createMillingScene()
 {
     INFO("Creating milling scene.");
 
-    m_stock = transmuter::geometry::shapes::Cylinder::generateSolid(100.0, 200.0, 5.0);
+    m_stock = transmuter::geometry::GeometryFactory::createCylinder(
+        100.0, 200.0, 5.0, transmuter::geometry::ShapeSampling::SOLID);
 
     // The stock remains an immutable reference. Cutting updates only the workpiece snapshot.
     m_workpiece = m_stock->clone();
 
     Eigen::Vector3d dims(50.0, 50.0, 50.0);
-    m_model = transmuter::geometry::shapes::Box::generateSolid(dims, 5.0);
+    m_model = transmuter::geometry::GeometryFactory::createBox(
+        dims, 5.0, transmuter::geometry::ShapeSampling::SOLID);
 
-    m_toolPath = std::make_shared<transmuter::geometry::PointCloud>();
+    m_toolPath = transmuter::geometry::GeometryFactory::createToolPath();
 
-    m_toolModel = transmuter::geometry::shapes::Endmill::generate(10.0, 30.0);
+    m_toolModel = transmuter::geometry::GeometryFactory::createEndmill(10.0, 30.0);
 
     return transmuter::geometry::MillingScene{
         .stock = m_stock,

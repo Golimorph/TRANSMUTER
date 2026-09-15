@@ -4,7 +4,7 @@
 #include <memory>
 
 #include "geometryIf.h"
-#include "pointCloud.h"
+#include "toolPathIf.h"
 
 namespace transmuter::geometry
 {
@@ -18,7 +18,7 @@ struct MillingScene
 
     // Shared live state used by execution and visualization.
     std::shared_ptr<GeometryIf> workpiece;
-    std::shared_ptr<PointCloud> toolPath;
+    std::shared_ptr<ToolPathIf> toolPath;
 
     // The tool geometry is also an immutable input to the operation.
     std::shared_ptr<const GeometryIf> toolModel;

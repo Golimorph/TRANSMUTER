@@ -4,7 +4,7 @@
 #include <memory>
 
 #include "geometryIf.h"
-#include "pointCloud.h"
+#include "toolPathIf.h"
 
 namespace transmuter::pathgenerator
 {
@@ -12,12 +12,12 @@ namespace transmuter::pathgenerator
 /**
  * The artifacts produced by one local machining operation.
  *
- * toolPath may reference a scene-owned point cloud that was updated live during generation.
+ * toolPath may reference scene-owned storage that was updated live during generation.
  * workpiece stays private during generation, then may replace the corresponding scene region.
  */
 struct PathGenerationResult
 {
-    std::shared_ptr<const geometry::PointCloud> toolPath;
+    std::shared_ptr<const geometry::ToolPathIf> toolPath;
     std::shared_ptr<geometry::GeometryIf> workpiece;
 };
 

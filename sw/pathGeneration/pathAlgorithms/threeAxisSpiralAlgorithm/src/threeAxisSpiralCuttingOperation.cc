@@ -20,12 +20,16 @@ constexpr auto PATH_PUBLICATION_PAUSE = std::chrono::milliseconds(2);
 
 }  // namespace
 
-ThreeAxisSpiralCuttingOperation::ThreeAxisSpiralCuttingOperation(const geometry::GeometryIf& stock, const geometry::GeometryIf& model, const geometry::GeometryIf& tool, double geometryTolerance, std::shared_ptr<geometry::PointCloud> liveToolPath)
+ThreeAxisSpiralCuttingOperation::ThreeAxisSpiralCuttingOperation(const geometry::GeometryIf& stock,
+    const geometry::GeometryIf& model, const geometry::GeometryIf& tool, double geometryTolerance,
+    std::shared_ptr<geometry::ToolPathIf> liveToolPath)
 {
     setupGeneration(stock, model, tool, geometryTolerance, std::move(liveToolPath));
 }
 
-void ThreeAxisSpiralCuttingOperation::setupGeneration(const geometry::GeometryIf& stock, const geometry::GeometryIf& model, const geometry::GeometryIf& tool, double geometryTolerance, std::shared_ptr<geometry::PointCloud> liveToolPath)
+void ThreeAxisSpiralCuttingOperation::setupGeneration(const geometry::GeometryIf& stock,
+    const geometry::GeometryIf& model, const geometry::GeometryIf& tool, double geometryTolerance,
+    std::shared_ptr<geometry::ToolPathIf> liveToolPath)
 {
     if (!liveToolPath)
     {
@@ -199,7 +203,7 @@ geometry::Vertex ThreeAxisSpiralCuttingOperation::appendPathPoint(const Eigen::V
     geometry::Vertex pathPoint;
     pathPoint.pos = position;
     pathPoint.normal = Eigen::Vector3d::UnitZ();
-    m_toolPath->addVertex(pathPoint);
+    m_toolPath->append(pathPoint);
 
     ++m_pointsSincePublicationPause;
     if (m_pointsSincePublicationPause >= PATH_PUBLICATION_BATCH_SIZE)

@@ -1,11 +1,11 @@
-#ifndef TRANSMUTER_GEOMETRY_SHAPES_ENDMILL_H
-#define TRANSMUTER_GEOMETRY_SHAPES_ENDMILL_H
+#ifndef TRANSMUTER_GEOMETRY_ANALYTIC_SHAPES_ENDMILL_H
+#define TRANSMUTER_GEOMETRY_ANALYTIC_SHAPES_ENDMILL_H
 
 #include <memory>
 
 #include "cylinder.h"
 
-namespace transmuter::geometry::shapes
+namespace transmuter::geometry::analyticshapes
 {
 
 class Endmill
@@ -19,6 +19,6 @@ class Endmill
     static std::shared_ptr<Cylinder> generate(double diameter, double length);
 };
 
-}  // namespace transmuter::geometry::shapes
+}  // namespace transmuter::geometry::analyticshapes
 
-#endif  // TRANSMUTER_GEOMETRY_SHAPES_ENDMILL_H
+#endif  // TRANSMUTER_GEOMETRY_ANALYTIC_SHAPES_ENDMILL_H

@@ -1,10 +1,8 @@
-# Example shapes
+# Shape implementations
 
-These shapes provide simple geometries for demonstrations and algorithm development. `Box` and
-the cylinder sampling factories return `PointCloud` objects, which satisfy the
-representation-independent `GeometryIf` contract.
+This directory contains geometry construction details. Code outside the geometry module must not
+include these headers; it creates shapes through `GeometryFactory` and retains them through
+`GeometryIf`.
 
-`Cylinder::generate` and `Box::generate` sample boundaries. Their `generateSolid` variants fill
-the corresponding volume and are suitable for point-cloud solid operations. A constructed
-`Cylinder` stores only its radius and height and answers containment analytically. `Endmill` uses
-this compact cylinder representation for the tool.
+- `analyticShapes` contains compact parameterized shapes used for fast geometric queries.
+- `pointCloudShapes` contains sampled shape generators used by the current point-cloud backend.

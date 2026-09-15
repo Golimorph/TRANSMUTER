@@ -7,7 +7,7 @@
 #include "geometryIf.h"
 #include "millingScene.h"
 #include "pathGenerationResult.h"
-#include "pointCloud.h"
+#include "toolPathIf.h"
 #include "trace.h"
 
 namespace transmuter::pathgenerator
@@ -53,7 +53,8 @@ class PathAlgorithmIf
     virtual void setConfig(const PathGeneratorConfig& config) = 0;
 
     // The supplied path is published live; the returned workpiece is published on completion.
-    virtual PathGenerationResult generate(std::atomic<bool>& stopRequested, std::shared_ptr<geometry::PointCloud> liveToolPath) = 0;
+    virtual PathGenerationResult generate(
+        std::atomic<bool>& stopRequested, std::shared_ptr<geometry::ToolPathIf> liveToolPath) = 0;
 
    protected:
     const geometry::GeometryIf& stock() const
