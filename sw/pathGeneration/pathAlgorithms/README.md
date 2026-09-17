@@ -10,8 +10,8 @@ inspect point-cloud storage.
 
 Each algorithm has its own folder containing its public `inc` and private implementation `src`
 files. `ThreeAxisSpiralAlgorithm` coordinates the configured layers and circles.
-`ThreeAxisSpiralCuttingOperation` receives the stock, target model, tool, and live tool path, then
-owns the generation state and cutting mechanics for one run. Their interface makes the
+`ThreeAxisSpiralCuttingOperation` receives the stock, target model, tool, and caller-owned path
+output, then owns the generation state and cutting mechanics for one run. Their interface makes the
 configuration mapping explicit: pass spacing divides a layer into concentric circles, point
 spacing samples each circle, and layer spacing selects the next cutting depth.
 

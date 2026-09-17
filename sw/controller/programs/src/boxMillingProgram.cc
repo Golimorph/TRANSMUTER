@@ -47,19 +47,11 @@ transmuter::geometry::MillingScene BoxMillingProgram::createMillingScene()
 {
     INFO("Creating milling scene.");
 
-    m_stock = transmuter::geometry::GeometryFactory::createCylinder(
-        100.0, 200.0, 5.0, transmuter::geometry::ShapeSampling::SOLID);
-
-    // The stock remains an immutable reference. Cutting updates only the workpiece snapshot.
+    m_stock = transmuter::geometry::GeometryFactory::createDodecahedron(100.0, transmuter::geometry::GeometryRepresentation::POINT_CLOUD_SOLID, 3.0);
     m_workpiece = m_stock->clone();
-
-    Eigen::Vector3d dims(50.0, 50.0, 50.0);
-    m_model = transmuter::geometry::GeometryFactory::createBox(
-        dims, 5.0, transmuter::geometry::ShapeSampling::SOLID);
-
+    m_model = transmuter::geometry::GeometryFactory::createTorus(50.0, 20.0, transmuter::geometry::GeometryRepresentation::POINT_CLOUD_SOLID, 3.0);
     m_toolPath = transmuter::geometry::GeometryFactory::createToolPath();
-
-    m_toolModel = transmuter::geometry::GeometryFactory::createEndmill(10.0, 30.0);
+    m_toolModel = transmuter::geometry::GeometryFactory::createCylinder(10.0, 30.0, transmuter::geometry::GeometryRepresentation::ANALYTIC);
 
     return transmuter::geometry::MillingScene{
         .stock = m_stock,
@@ -76,7 +68,7 @@ BoxMillingProgram::MillingEnvironment BoxMillingProgram::createMillingEnvironmen
 
     transmuter::pathgenerator::PathGeneratorConfig config{
         .pointSpacing = 2.0,
-        .passSpacing = 2.0,
+        .passSpacing = 5.0,
         .layerSpacing = 10.0,
         .geometryTolerance = 0.01,
     };

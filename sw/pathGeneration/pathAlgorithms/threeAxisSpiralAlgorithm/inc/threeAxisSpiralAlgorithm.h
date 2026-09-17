@@ -9,18 +9,25 @@
 namespace transmuter::pathgenerator::algorithms
 {
 
+class ThreeAxisSpiralCuttingOperation;
+
 class ThreeAxisSpiralAlgorithm : public PathAlgorithmIf
 {
    public:
-    explicit ThreeAxisSpiralAlgorithm(const transmuter::geometry::MillingScene& scene);
+    ThreeAxisSpiralAlgorithm(
+        const transmuter::geometry::MillingScene& scene, PathGeneratorConfig config);
     ~ThreeAxisSpiralAlgorithm() override = default;
 
-    void setConfig(const PathGeneratorConfig& config) override;
     PathGenerationResult generate(
-        std::atomic<bool>& stopRequested, std::shared_ptr<geometry::ToolPathIf> liveToolPath) override;
+        std::atomic<bool>& stopRequested,
+        std::shared_ptr<geometry::ToolPathIf> pathOutput) const override;
 
    private:
-    PathGeneratorConfig m_config;
+    static void validateConfig(const PathGeneratorConfig& config);
+    void cutCounterClockwiseAvoidingModel(
+        ThreeAxisSpiralCuttingOperation& cuttingOperation, double circleRadius) const;
+
+    const PathGeneratorConfig m_config;
 };
 
 }  // namespace transmuter::pathgenerator::algorithms

@@ -12,12 +12,13 @@ namespace transmuter::pathgenerator
 namespace
 {
 
-std::unique_ptr<algorithms::PathAlgorithmIf> createAlgorithm(PathGenerator::AlgorithmType algorithmType, const geometry::MillingScene& millingScene)
+std::unique_ptr<algorithms::PathAlgorithmIf> createAlgorithm(PathGenerator::AlgorithmType algorithmType,
+    const PathGeneratorConfig& config, const geometry::MillingScene& millingScene)
 {
     switch (algorithmType)
     {
         case PathGenerator::AlgorithmType::THREE_AXIS_SPIRAL:
-            return std::make_unique<algorithms::ThreeAxisSpiralAlgorithm>(millingScene);
+            return std::make_unique<algorithms::ThreeAxisSpiralAlgorithm>(millingScene, config);
         default:
             ERROR("Unknown algorithm type selected.");
     }
@@ -28,16 +29,15 @@ std::unique_ptr<algorithms::PathAlgorithmIf> createAlgorithm(PathGenerator::Algo
 
 // Keep the scene-owned path so generation and visualization observe the same object.
 PathGenerator::PathGenerator(AlgorithmType algorithmType, PathGeneratorConfig config, const transmuter::geometry::MillingScene& millingScene)
-    : m_liveToolPath(millingScene.toolPath)
+    : m_pathOutput(millingScene.toolPath)
 {
-    if (!m_liveToolPath)
+    if (!m_pathOutput)
     {
         ERROR("toolPath is null ptr");
     }
 
     INFO("Setting algorithm to: " << magic_enum::enum_name(algorithmType).data() << ".");
-    m_algorithm = createAlgorithm(algorithmType, millingScene);
-    m_algorithm->setConfig(config);
+    m_algorithm = createAlgorithm(algorithmType, config, millingScene);
 }
 
 PathGenerator::~PathGenerator()
@@ -92,7 +92,7 @@ void PathGenerator::launchGenerationThread()
     m_thread = std::thread(
         [this]()
         {
-            m_result = m_algorithm->generate(m_stopRequested, m_liveToolPath);
+            m_result = m_algorithm->generate(m_stopRequested, m_pathOutput);
             const bool wasStopped = m_stopRequested.load();
             m_isResultReady.store(!wasStopped);
             m_isGenerating = false;

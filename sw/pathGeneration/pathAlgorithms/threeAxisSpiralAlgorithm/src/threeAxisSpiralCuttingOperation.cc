@@ -2,10 +2,7 @@
 
 #include <algorithm>
 #include <chrono>
-#include <cmath>
-#include <numbers>
 #include <thread>
-#include <utility>
 
 #include "trace.h"
 
@@ -22,22 +19,16 @@ constexpr auto PATH_PUBLICATION_PAUSE = std::chrono::milliseconds(2);
 
 ThreeAxisSpiralCuttingOperation::ThreeAxisSpiralCuttingOperation(const geometry::GeometryIf& stock,
     const geometry::GeometryIf& model, const geometry::GeometryIf& tool, double geometryTolerance,
-    std::shared_ptr<geometry::ToolPathIf> liveToolPath)
+    geometry::ToolPathIf& pathOutput)
+    : m_pathOutput(pathOutput)
 {
-    setupGeneration(stock, model, tool, geometryTolerance, std::move(liveToolPath));
+    setupGeneration(stock, model, tool, geometryTolerance);
 }
 
 void ThreeAxisSpiralCuttingOperation::setupGeneration(const geometry::GeometryIf& stock,
-    const geometry::GeometryIf& model, const geometry::GeometryIf& tool, double geometryTolerance,
-    std::shared_ptr<geometry::ToolPathIf> liveToolPath)
+    const geometry::GeometryIf& model, const geometry::GeometryIf& tool, double geometryTolerance)
 {
-    if (!liveToolPath)
-    {
-        ERROR("toolPath is null ptr");
-    }
-
-    m_toolPath = std::move(liveToolPath);
-    m_toolPath->clear();
+    m_pathOutput.clear();
     m_workpiece = stock.clone();
     m_modelGeometry = &model;
     m_toolGeometry = &tool;
@@ -47,6 +38,9 @@ void ThreeAxisSpiralCuttingOperation::setupGeneration(const geometry::GeometryIf
     m_center = (m_stockBounds.min.head<2>() + m_stockBounds.max.head<2>()) / 2.0;
     m_outerRadius = calculateOuterRadius(stock, m_tool.radius);
     m_safeToolOriginZ = m_stockBounds.max.z() + m_geometryTolerance - m_tool.minimumLocalZ;
+    INFO("Prepared +Z cutting operation: XY center (" << m_center.x() << ", " << m_center.y()
+                                                        << ") mm, outer tool-center radius " << m_outerRadius
+                                                        << " mm, safe tool-origin Z " << m_safeToolOriginZ << " mm.");
 }
 
 ThreeAxisSpiralCuttingOperation::VerticalToolEnvelope ThreeAxisSpiralCuttingOperation::calculateToolEnvelope(const geometry::GeometryIf& tool) const
@@ -103,17 +97,9 @@ void ThreeAxisSpiralCuttingOperation::prepareToCut(const Layer& layer)
     m_layerZ = layer.toolZ;
 }
 
-void ThreeAxisSpiralCuttingOperation::cutCounterClockwiseAvoidingModel(const Circle& circle, double pointSpacing)
+Eigen::Vector2d ThreeAxisSpiralCuttingOperation::center() const
 {
-    const double circumference = 2.0 * std::numbers::pi * circle.radius;
-    const size_t sampleCount = std::max<size_t>(3, static_cast<size_t>(std::ceil(circumference / pointSpacing)));
-
-    for (size_t sample = 0; sample <= sampleCount; ++sample)
-    {
-        const double angle = 2.0 * std::numbers::pi * sample / sampleCount;
-        const Eigen::Vector2d toolCenter = m_center + Eigen::Vector2d(std::cos(angle), std::sin(angle)) * circle.radius;
-        moveToolToLayerHeightAvoidingModel(toolCenter);
-    }
+    return m_center;
 }
 
 void ThreeAxisSpiralCuttingOperation::finishCurrentLayerAtCenter()
@@ -203,7 +189,7 @@ geometry::Vertex ThreeAxisSpiralCuttingOperation::appendPathPoint(const Eigen::V
     geometry::Vertex pathPoint;
     pathPoint.pos = position;
     pathPoint.normal = Eigen::Vector3d::UnitZ();
-    m_toolPath->append(pathPoint);
+    m_pathOutput.append(pathPoint);
 
     ++m_pointsSincePublicationPause;
     if (m_pointsSincePublicationPause >= PATH_PUBLICATION_BATCH_SIZE)
@@ -220,9 +206,9 @@ size_t ThreeAxisSpiralCuttingOperation::completedLayerCount() const
     return m_completedLayerCount;
 }
 
-PathGenerationResult ThreeAxisSpiralCuttingOperation::takeResult()
+std::shared_ptr<geometry::GeometryIf> ThreeAxisSpiralCuttingOperation::takeWorkpiece()
 {
-    return PathGenerationResult{.toolPath = std::move(m_toolPath), .workpiece = std::move(m_workpiece)};
+    return std::move(m_workpiece);
 }
 
 }  // namespace transmuter::pathgenerator::algorithms

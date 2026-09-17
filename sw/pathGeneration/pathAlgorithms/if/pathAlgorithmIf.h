@@ -49,12 +49,9 @@ class PathAlgorithmIf
 
     virtual ~PathAlgorithmIf() = default;
 
-    // Algorithm needs to know the settings
-    virtual void setConfig(const PathGeneratorConfig& config) = 0;
-
     // The supplied path is published live; the returned workpiece is published on completion.
     virtual PathGenerationResult generate(
-        std::atomic<bool>& stopRequested, std::shared_ptr<geometry::ToolPathIf> liveToolPath) = 0;
+        std::atomic<bool>& stopRequested, std::shared_ptr<geometry::ToolPathIf> pathOutput) const = 0;
 
    protected:
     const geometry::GeometryIf& stock() const

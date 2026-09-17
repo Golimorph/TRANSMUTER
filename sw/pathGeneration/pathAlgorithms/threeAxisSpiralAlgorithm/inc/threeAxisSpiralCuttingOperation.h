@@ -6,7 +6,6 @@
 #include <vector>
 
 #include "geometryIf.h"
-#include "pathGenerationResult.h"
 #include "toolPathIf.h"
 
 namespace transmuter::pathgenerator::algorithms
@@ -28,16 +27,17 @@ class ThreeAxisSpiralCuttingOperation
 
     ThreeAxisSpiralCuttingOperation(const geometry::GeometryIf& stock, const geometry::GeometryIf& model,
         const geometry::GeometryIf& tool, double geometryTolerance,
-        std::shared_ptr<geometry::ToolPathIf> liveToolPath);
+        geometry::ToolPathIf& pathOutput);
 
     std::vector<Layer> layers(double layerSpacing) const;
     std::vector<Circle> concentricCircles(double passSpacing) const;
+    Eigen::Vector2d center() const;
     void prepareToCut(const Layer& layer);
-    void cutCounterClockwiseAvoidingModel(const Circle& circle, double pointSpacing);
+    void moveToolToLayerHeightAvoidingModel(const Eigen::Vector2d& toolCenter);
     void finishCurrentLayerAtCenter();
 
     size_t completedLayerCount() const;
-    PathGenerationResult takeResult();
+    std::shared_ptr<geometry::GeometryIf> takeWorkpiece();
 
    private:
     struct VerticalToolEnvelope
@@ -47,21 +47,19 @@ class ThreeAxisSpiralCuttingOperation
     };
 
     void setupGeneration(const geometry::GeometryIf& stock, const geometry::GeometryIf& model,
-        const geometry::GeometryIf& tool, double geometryTolerance,
-        std::shared_ptr<geometry::ToolPathIf> liveToolPath);
+        const geometry::GeometryIf& tool, double geometryTolerance);
     VerticalToolEnvelope calculateToolEnvelope(const geometry::GeometryIf& tool) const;
     double calculateOuterRadius(const geometry::GeometryIf& stock, double toolRadius) const;
     Eigen::Vector3d liftToAvoidModel(const Eigen::Vector3d& requestedPosition) const;
     bool toolIntersectsModelAt(const Eigen::Vector3d& position) const;
     Eigen::Affine3d toolTransform(const geometry::Vertex& pose) const;
     void cutWorkpieceAtCurrentPoses();
-    void moveToolToLayerHeightAvoidingModel(const Eigen::Vector2d& toolCenter);
     void retractToolToSafeHeight();
     void moveToolToNextLayerStart();
     geometry::Vertex appendPathPoint(const Eigen::Vector3d& position);
 
     std::shared_ptr<geometry::GeometryIf> m_workpiece;
-    std::shared_ptr<geometry::ToolPathIf> m_toolPath;
+    geometry::ToolPathIf& m_pathOutput;
     const geometry::GeometryIf* m_modelGeometry = nullptr;
     const geometry::GeometryIf* m_toolGeometry = nullptr;
     geometry::GeometryBounds m_stockBounds;

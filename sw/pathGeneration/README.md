@@ -3,9 +3,9 @@
 `PathGenerator` runs a selected path algorithm in the background. A `MillingScene` supplies
 immutable stock, target-model, and tool geometries through `GeometryIf`.
 
-`PathGenerator` owns implementation selection through its `AlgorithmType`. Once selected,
-algorithms receive only the execution settings in `PathGeneratorConfig` through `PathAlgorithmIf`,
-including `geometryTolerance`, the smallest meaningful spatial distance in the simulated geometry.
+`PathGenerator` owns implementation selection through its `AlgorithmType`. The selected algorithm
+receives its immutable execution settings in `PathGeneratorConfig` during construction, including
+`geometryTolerance`, the smallest meaningful spatial distance in the simulated geometry.
 
 Generation has two outputs with different publication lifetimes:
 
