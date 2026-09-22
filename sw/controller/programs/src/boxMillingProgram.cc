@@ -79,7 +79,7 @@ BoxMillingProgram::MillingEnvironment BoxMillingProgram::createMillingEnvironmen
     return MillingEnvironment{.visualizer = transmuter::visualization::Visualizer(102, 76,
                                   "Transmuter: 5-Axis Path Simulation", millingScene, visualizerConfig),
         .pathGenerator = transmuter::pathgenerator::PathGenerator(
-            transmuter::pathgenerator::PathGenerator::AlgorithmType::THREE_AXIS_SPIRAL, config,
+            transmuter::pathgenerator::PathGenerator::AlgorithmType::THREE_AXIS_RASTER, config,
             millingScene)};
 }
 

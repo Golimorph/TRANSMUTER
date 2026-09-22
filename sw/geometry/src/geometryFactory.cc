@@ -1,11 +1,11 @@
 #include "../if/geometryFactory.h"
 
-#include "../pointCloud/inc/pointCloud.h"
 #include "../shapes/analyticShapes/inc/cylinder.h"
 #include "../shapes/pointCloudShapes/inc/boxGenerator.h"
 #include "../shapes/pointCloudShapes/inc/cylinderGenerator.h"
 #include "../shapes/pointCloudShapes/inc/dodecahedronGenerator.h"
 #include "../shapes/pointCloudShapes/inc/torusGenerator.h"
+#include "../toolPath/inc/toolPath.h"
 #include "trace.h"
 
 namespace transmuter::geometry
@@ -101,7 +101,7 @@ std::shared_ptr<GeometryIf> GeometryFactory::createTorus(double majorRadius, dou
 std::shared_ptr<ToolPathIf> GeometryFactory::createToolPath()
 {
     INFO("Creating an empty tool path.");
-    return std::make_shared<PointCloud>();
+    return std::make_shared<ToolPath>();
 }
 
 }  // namespace transmuter::geometry

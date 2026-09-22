@@ -3,6 +3,7 @@
 #include <3rdParty/magic_enum.hpp>
 
 #include "pathAlgorithmIf.h"
+#include "threeAxisRasterAlgorithm.h"
 #include "threeAxisSpiralAlgorithm.h"
 #include "trace.h"
 
@@ -17,6 +18,8 @@ std::unique_ptr<algorithms::PathAlgorithmIf> createAlgorithm(PathGenerator::Algo
 {
     switch (algorithmType)
     {
+        case PathGenerator::AlgorithmType::THREE_AXIS_RASTER:
+            return std::make_unique<algorithms::ThreeAxisRasterAlgorithm>(millingScene, config);
         case PathGenerator::AlgorithmType::THREE_AXIS_SPIRAL:
             return std::make_unique<algorithms::ThreeAxisSpiralAlgorithm>(millingScene, config);
         default:

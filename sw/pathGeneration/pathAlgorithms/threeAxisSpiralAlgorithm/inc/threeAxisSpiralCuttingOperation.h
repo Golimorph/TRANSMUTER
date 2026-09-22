@@ -56,7 +56,8 @@ class ThreeAxisSpiralCuttingOperation
     void cutWorkpieceAtCurrentPoses();
     void retractToolToSafeHeight();
     void moveToolToNextLayerStart();
-    geometry::Vertex appendPathPoint(const Eigen::Vector3d& position);
+    geometry::Vertex appendPathPoint(const Eigen::Vector3d& position,
+        geometry::MotionSpeed incomingSpeed = geometry::MotionSpeed::CUTTING);
 
     std::shared_ptr<geometry::GeometryIf> m_workpiece;
     geometry::ToolPathIf& m_pathOutput;

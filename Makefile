@@ -9,6 +9,7 @@ INC = -I/usr/include/eigen3 \
       -I./sw/geometry/if \
       -I./sw/pathGeneration/inc \
 	  -I./sw/pathGeneration/pathAlgorithms/if \
+	  -I./sw/pathGeneration/pathAlgorithms/threeAxisRasterAlgorithm/inc \
 	  -I./sw/pathGeneration/pathAlgorithms/threeAxisSpiralAlgorithm/inc \
       -I./sw/rendering/inc \
       -I./sw/visualization/inc \
@@ -22,6 +23,7 @@ SRCS = sw/main.cc \
 	   $(wildcard sw/geometry/pointCloud/src/*.cc) \
 	   $(wildcard sw/geometry/shapes/analyticShapes/src/*.cc) \
 	   $(wildcard sw/geometry/shapes/pointCloudShapes/src/*.cc) \
+	   $(wildcard sw/geometry/toolPath/src/*.cc) \
        $(wildcard sw/pathGeneration/src/*.cc) \
 	   $(wildcard sw/pathGeneration/pathAlgorithms/*/src/*.cc) \
        $(wildcard sw/visualization/src/*.cc)

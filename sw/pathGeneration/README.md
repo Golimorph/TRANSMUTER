@@ -13,5 +13,9 @@ Generation has two outputs with different publication lifetimes:
 - the locally simulated workpiece is published in `PathGenerationResult` only when generation
   completes.
 
+Each published `ToolPathPoint` records the speed class of the segment arriving at its pose.
+Algorithms may omit the speed to select the fail-safe `CUTTING` default and explicitly mark only
+known-clear travel as `RAPID`. Concrete playback and machine settings map those classes to speeds.
+
 This division supports future local operations: a selected region can become a local stock/model
 scene, then its generated workpiece can replace that region in the larger scene.

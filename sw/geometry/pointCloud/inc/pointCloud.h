@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "../../if/geometryIf.h"
-#include "../../if/toolPathIf.h"
 
 namespace transmuter::geometry
 {
@@ -19,9 +18,9 @@ namespace transmuter::geometry
  * @brief A point-sampled implementation of GeometryIf.
  *
  * Samples may describe a surface or a filled volume. Geometry consumers should depend on
- * GeometryIf; direct point access is reserved for point-cloud backends and path storage.
+ * GeometryIf; direct point access is reserved for point-cloud backends.
  */
-class PointCloud : public GeometryIf, public ToolPathIf
+class PointCloud : public GeometryIf
 {
    public:
     PointCloud() = default;
@@ -41,20 +40,20 @@ class PointCloud : public GeometryIf, public ToolPathIf
         m_vertices.reserve(capacity);
     }
 
-    void append(const Vertex& vertex) override
+    void append(const Vertex& vertex)
     {
         std::lock_guard<std::mutex> lock(m_mutex);
         m_vertices.push_back(vertex);
         m_minimumPointSpacing.reset();
     }
 
-    void copyTo(std::vector<Vertex>& output) const override
+    void copyTo(std::vector<Vertex>& output) const
     {
         std::lock_guard<std::mutex> lock(m_mutex);
         output = m_vertices;
     }
 
-    void clear() override
+    void clear()
     {
         std::lock_guard<std::mutex> lock(m_mutex);
         m_vertices.clear();
@@ -100,7 +99,7 @@ class PointCloud : public GeometryIf, public ToolPathIf
         m_vertices.shrink_to_fit();
     }
 
-    bool isEmpty() const override
+    bool isEmpty() const
     {
         std::lock_guard<std::mutex> lock(m_mutex);
         return m_vertices.empty();

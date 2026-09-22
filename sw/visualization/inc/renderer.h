@@ -43,6 +43,7 @@ class Renderer
     double m_lastMouseX = 0.0;
     double m_lastMouseY = 0.0;
     std::vector<geometry::Vertex> m_pointCloudSnapshot;
+    std::vector<geometry::ToolPathPoint> m_toolPathSnapshot;
 };
 
 }  // namespace transmuter::visualization

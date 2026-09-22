@@ -18,6 +18,8 @@ namespace transmuter::visualization
 struct VisualizerConfig
 {
     double toolPathPlaybackDurationSeconds = 60.0;
+    // Relative to CUTTING while preserving the configured total playback duration.
+    double rapidPlaybackSpeedMultiplier = 5.0;
 };
 
 /*!
@@ -43,10 +45,10 @@ class Visualizer
     struct PlaybackState
     {
         std::chrono::steady_clock::time_point startTime;
-        std::vector<geometry::Vertex> toolPath;
-        std::vector<double> cumulativeDistances;
+        std::vector<geometry::ToolPathPoint> toolPath;
+        std::vector<double> cumulativeTravelTimes;
         geometry::Vertex toolPose;
-        double pathLength = 0.0;
+        double pathTravelTime = 0.0;
         size_t processedPointCount = 0;
         bool started = false;
         bool active = false;
@@ -55,12 +57,12 @@ class Visualizer
 
     void validateInputs() const;
     void updateToolPathPlayback();
-    void calculatePlaybackDistances();
+    void calculatePlaybackTimes();
     double calculatePlaybackProgress() const;
-    void updateToolPose(double targetDistance);
-    void removeTraversedMaterial(double targetDistance);
+    void updateToolPose(double targetTravelTime);
+    void removeTraversedMaterial(double targetTravelTime);
     void finishToolPathPlayback();
-    geometry::Vertex interpolateToolPose(size_t upperIndex, double distance) const;
+    geometry::Vertex interpolateToolPose(size_t upperIndex, double travelTime) const;
     geometry::Vertex getToolNode() const;
 
     Renderer m_renderer;

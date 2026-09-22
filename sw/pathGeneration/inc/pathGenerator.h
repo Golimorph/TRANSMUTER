@@ -18,6 +18,7 @@ class PathGenerator
     /** Selects the concrete implementation constructed by PathGenerator. */
     enum class AlgorithmType
     {
+        THREE_AXIS_RASTER,
         THREE_AXIS_SPIRAL
     };
 

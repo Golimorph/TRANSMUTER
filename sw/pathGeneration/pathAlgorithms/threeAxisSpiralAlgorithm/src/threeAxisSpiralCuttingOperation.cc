@@ -180,16 +180,19 @@ void ThreeAxisSpiralCuttingOperation::retractToolToSafeHeight()
 
 void ThreeAxisSpiralCuttingOperation::moveToolToNextLayerStart()
 {
-    appendPathPoint(Eigen::Vector3d(m_center.x() + m_outerRadius, m_center.y(), m_safeToolOriginZ));
+    appendPathPoint(
+        Eigen::Vector3d(m_center.x() + m_outerRadius, m_center.y(), m_safeToolOriginZ),
+        geometry::MotionSpeed::RAPID);
     appendPathPoint(Eigen::Vector3d(m_center.x() + m_outerRadius, m_center.y(), m_layerZ));
 }
 
-geometry::Vertex ThreeAxisSpiralCuttingOperation::appendPathPoint(const Eigen::Vector3d& position)
+geometry::Vertex ThreeAxisSpiralCuttingOperation::appendPathPoint(
+    const Eigen::Vector3d& position, geometry::MotionSpeed incomingSpeed)
 {
     geometry::Vertex pathPoint;
     pathPoint.pos = position;
     pathPoint.normal = Eigen::Vector3d::UnitZ();
-    m_pathOutput.append(pathPoint);
+    m_pathOutput.append(pathPoint, incomingSpeed);
 
     ++m_pointsSincePublicationPause;
     if (m_pointsSincePublicationPause >= PATH_PUBLICATION_BATCH_SIZE)

@@ -114,7 +114,7 @@ void Renderer::drawWorkpiece(const geometry::GeometryIf& workpiece)
 
 void Renderer::drawToolPath(const geometry::ToolPathIf& toolPath)
 {
-    toolPath.copyTo(m_pointCloudSnapshot);
+    toolPath.copyTo(m_toolPathSnapshot);
 
     glDisable(GL_LIGHTING);
     glEnable(GL_BLEND);
@@ -123,10 +123,10 @@ void Renderer::drawToolPath(const geometry::ToolPathIf& toolPath)
     glLineWidth(1.0f);
     glBegin(GL_LINE_STRIP);
 
-    for (const auto& v : m_pointCloudSnapshot)
+    for (const auto& point : m_toolPathSnapshot)
     {
         glColor4f(0.35f, 0.75f, 0.85f, 0.10f);
-        glVertex3d(v.pos.x(), v.pos.y(), v.pos.z());
+        glVertex3d(point.pose.pos.x(), point.pose.pos.y(), point.pose.pos.z());
     }
     glEnd();
     glDepthMask(GL_TRUE);

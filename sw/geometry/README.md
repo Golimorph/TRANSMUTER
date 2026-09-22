@@ -25,8 +25,9 @@ The `if` directory is the module's public boundary. It contains `GeometryIf`, `T
 value types, `MillingScene`, and `GeometryFactory`. The factory provides typed creation methods and
 returns interface pointers, so callers cannot depend on concrete representations.
 
-`PointCloud` is private implementation storage under `pointCloud`. Concrete shape construction is
-private under `shapes` and divided by representation:
+`PointCloud` is private implementation storage under `pointCloud`. `ToolPath` is separate private
+storage under `toolPath`, where each pose retains the speed of its incoming movement. Concrete
+shape construction is private under `shapes` and divided by representation:
 
 - `shapes/analyticShapes` contains immutable parameterized geometry such as the end-mill cylinder.
 - `shapes/pointCloudShapes` contains generators for sampled boxes, cylinders, dodecahedra, and tori.

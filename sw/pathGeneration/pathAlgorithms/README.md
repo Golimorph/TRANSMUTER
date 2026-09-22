@@ -9,7 +9,14 @@ from their mutable workpiece snapshot. They publish ordered poses through `ToolP
 inspect point-cloud storage.
 
 Each algorithm has its own folder containing its public `inc` and private implementation `src`
-files. `ThreeAxisSpiralAlgorithm` coordinates the configured layers and circles.
+files. `ThreeAxisRasterAlgorithm` coordinates depth layers and unidirectional rows. Every cutting
+row moves from low X to high X; the tool retracts and returns at safe height before beginning the
+next row. `ThreeAxisRasterCuttingOperation` owns row transitions, model avoidance, and workpiece
+cutting for one run. Unidirectional motion in workpiece coordinates is not by itself a backlash
+guarantee; a future machine-aware planner must validate the resulting linear-axis motion after
+applying the machine kinematics.
+
+`ThreeAxisSpiralAlgorithm` coordinates the configured layers and circles.
 `ThreeAxisSpiralCuttingOperation` receives the stock, target model, tool, and caller-owned path
 output, then owns the generation state and cutting mechanics for one run. Their interface makes the
 configuration mapping explicit: pass spacing divides a layer into concentric circles, point
