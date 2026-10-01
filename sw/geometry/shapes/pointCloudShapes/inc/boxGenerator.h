@@ -4,7 +4,7 @@
 #include <Eigen/Dense>
 #include <memory>
 
-#include "../../../pointCloud/inc/pointCloud.h"
+#include "pointCloud.h"
 
 namespace transmuter::geometry::pointcloudshapes
 {

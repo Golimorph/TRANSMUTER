@@ -1,4 +1,4 @@
-#include "../inc/analyticShape.h"
+#include "analyticShape.h"
 
 #include <algorithm>
 

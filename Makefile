@@ -7,6 +7,10 @@ INC = -I/usr/include/eigen3 \
 	  -I./sw/controller/programs/if \
       -I./sw/controller/programs/inc \
       -I./sw/geometry/if \
+      -I./sw/geometry/pointCloud/inc \
+      -I./sw/geometry/shapes/analyticShapes/inc \
+      -I./sw/geometry/shapes/pointCloudShapes/inc \
+      -I./sw/geometry/toolPath/inc \
       -I./sw/pathGeneration/inc \
 	  -I./sw/pathGeneration/pathAlgorithms/if \
 	  -I./sw/pathGeneration/pathAlgorithms/threeAxisRasterAlgorithm/inc \

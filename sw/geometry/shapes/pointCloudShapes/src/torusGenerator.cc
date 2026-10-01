@@ -1,4 +1,4 @@
-#include "../inc/torusGenerator.h"
+#include "torusGenerator.h"
 
 #include <algorithm>
 #include <cmath>

@@ -1,4 +1,4 @@
-#include "../inc/cylinder.h"
+#include "cylinder.h"
 
 #include <algorithm>
 #include <cmath>
@@ -6,7 +6,7 @@
 #include <memory>
 #include <numbers>
 
-#include "../../pointCloudShapes/inc/cylinderGenerator.h"
+#include "cylinderGenerator.h"
 #include "trace.h"
 
 namespace transmuter::geometry::analyticshapes

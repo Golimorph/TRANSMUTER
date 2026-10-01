@@ -1,4 +1,4 @@
-#include "../inc/toolPath.h"
+#include "toolPath.h"
 
 namespace transmuter::geometry
 {

@@ -1,4 +1,4 @@
-#include "../inc/boxGenerator.h"
+#include "boxGenerator.h"
 
 #include <algorithm>
 #include <cstddef>

@@ -1,7 +1,7 @@
 #ifndef TRANSMUTER_GEOMETRY_ANALYTIC_SHAPES_ANALYTIC_SHAPE_H
 #define TRANSMUTER_GEOMETRY_ANALYTIC_SHAPES_ANALYTIC_SHAPE_H
 
-#include "../../../if/geometryIf.h"
+#include "geometryIf.h"
 
 namespace transmuter::geometry::analyticshapes
 {

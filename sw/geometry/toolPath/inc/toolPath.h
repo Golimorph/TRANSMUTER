@@ -4,7 +4,7 @@
 #include <mutex>
 #include <vector>
 
-#include "../../if/toolPathIf.h"
+#include "toolPathIf.h"
 
 namespace transmuter::geometry
 {

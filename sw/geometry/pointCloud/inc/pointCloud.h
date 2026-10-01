@@ -9,7 +9,7 @@
 #include <utility>
 #include <vector>
 
-#include "../../if/geometryIf.h"
+#include "geometryIf.h"
 
 namespace transmuter::geometry
 {

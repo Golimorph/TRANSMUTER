@@ -1,4 +1,4 @@
-#include "../inc/cylinderGenerator.h"
+#include "cylinderGenerator.h"
 
 #include <algorithm>
 #include <cmath>

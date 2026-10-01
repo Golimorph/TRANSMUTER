@@ -1,11 +1,11 @@
-#include "../if/geometryFactory.h"
+#include "geometryFactory.h"
 
-#include "../shapes/analyticShapes/inc/cylinder.h"
-#include "../shapes/pointCloudShapes/inc/boxGenerator.h"
-#include "../shapes/pointCloudShapes/inc/cylinderGenerator.h"
-#include "../shapes/pointCloudShapes/inc/dodecahedronGenerator.h"
-#include "../shapes/pointCloudShapes/inc/torusGenerator.h"
-#include "../toolPath/inc/toolPath.h"
+#include "cylinder.h"
+#include "boxGenerator.h"
+#include "cylinderGenerator.h"
+#include "dodecahedronGenerator.h"
+#include "torusGenerator.h"
+#include "toolPath.h"
 #include "trace.h"
 
 namespace transmuter::geometry

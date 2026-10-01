@@ -1,4 +1,4 @@
-#include "../inc/dodecahedronGenerator.h"
+#include "dodecahedronGenerator.h"
 
 #include <algorithm>
 #include <array>
