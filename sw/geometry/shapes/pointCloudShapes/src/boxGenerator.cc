@@ -103,8 +103,7 @@ std::shared_ptr<PointCloud> BoxGenerator::generateSolid(const Eigen::Vector3d& d
 {
     validateBox(dimensions, density);
     const Eigen::Vector3i steps = solidSampleSteps(dimensions, density);
-    const size_t capacity = static_cast<size_t>(steps.x() + 1) *
-                            static_cast<size_t>(steps.y() + 1) *
+    const size_t capacity = static_cast<size_t>(steps.x() + 1) * static_cast<size_t>(steps.y() + 1) *
                             static_cast<size_t>(steps.z() + 1);
     auto cloud = std::make_shared<PointCloud>(capacity);
     addSolidSamples(*cloud, dimensions, steps);

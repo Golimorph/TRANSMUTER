@@ -5,7 +5,6 @@
 #include <optional>
 
 #include "geometryIf.h"
-#include "toolPathIf.h"
 
 namespace transmuter::geometry
 {
@@ -17,7 +16,7 @@ enum class GeometryRepresentation
     POINT_CLOUD_SURFACE
 };
 
-/** Public construction boundary for geometry and tool-path implementations. */
+/** Public construction boundary for geometry implementations. */
 class GeometryFactory
 {
    public:
@@ -27,7 +26,6 @@ class GeometryFactory
     static std::shared_ptr<GeometryIf> createCylinder(double radius, double height, GeometryRepresentation representation, std::optional<double> sampleSpacing = std::nullopt);
     static std::shared_ptr<GeometryIf> createDodecahedron(double circumradius, GeometryRepresentation representation, double sampleSpacing);
     static std::shared_ptr<GeometryIf> createTorus(double majorRadius, double tubeRadius, GeometryRepresentation representation, double sampleSpacing);
-    static std::shared_ptr<ToolPathIf> createToolPath();
 };
 
 }  // namespace transmuter::geometry

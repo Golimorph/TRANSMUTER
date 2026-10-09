@@ -1,21 +1,26 @@
 # Path generation
 
-`PathGenerator` runs a selected path algorithm in the background. A `MillingScene` supplies
-immutable stock, target-model, and tool geometries through `GeometryIf`.
+`PathGenerator` runs a selected algorithm on a worker thread. The program supplies the scene,
+settings, and its one stop signal. The algorithm returns a `PathGenerationResult` containing the
+workpiece and machine path.
 
-`PathGenerator` owns implementation selection through its `AlgorithmType`. The selected algorithm
-receives its immutable execution settings in `PathGeneratorConfig` during construction, including
-`geometryTolerance`, the smallest meaningful spatial distance in the simulated geometry.
+Each algorithm clones its input stock into a private workpiece. It chooses a geometric move, asks
+`MachineKinematicsIf::propose` for a backlash-safe axis endpoint. The machine records accepted
+moves; only then does the algorithm cut its private workpiece. The machine reads accepted machine history
+to reconstruct preload; it never sees or changes stock, target, or workpiece geometry. Raster and
+spiral call `ERROR` on rejection. The experimental five-axis algorithm tries another candidate
+without publishing a rejected trial.
 
-Generation has two outputs with different publication lifetimes:
+| Folder | Responsibility | Public boundary |
+| --- | --- | --- |
+| `pathAlgorithms` | Construct raster, spiral or surface cuts from `GeometryIf` | `PathAlgorithmIf` and factory |
+| `dynamics` | Resolve axes and check motion and preload | `MachineKinematicsIf`, `MachinePathIf` |
 
-- the scene-owned tool path is updated while generation runs so visualization can show it growing;
-- the locally simulated workpiece is published in `PathGenerationResult` only when generation
-  completes.
-
-Each published `ToolPathPoint` records the speed class of the segment arriving at its pose.
-Algorithms may omit the speed to select the fail-safe `CUTTING` default and explicitly mark only
-known-clear travel as `RAPID`. Concrete playback and machine settings map those classes to speeds.
-
-This division supports future local operations: a selected region can become a local stock/model
-scene, then its generated workpiece can replace that region in the larger scene.
+`PathAlgorithmConfig` holds the geometric settings. Machine sampling and path
+tolerance are configured when the scene's machine is created, so algorithms do not carry machine
+validation policy or know its axis layout or force model.
+Each roughing or finishing operation has its own private workpiece and machine-owned live path. The generator snapshots each completed path so later stages cannot change its result. The quick program
+joins completed +Z operations above the current workpiece. The transfer is checked against the
+combined machine history and remaining material before its points are appended. Individually
+planned stages still need review as one complete program. See
+[machine dynamics](dynamics/README.md) and [the machining model](../../docs/machining-model.md).

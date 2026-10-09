@@ -4,7 +4,12 @@
 #include <memory>
 
 #include "geometryIf.h"
-#include "toolPathIf.h"
+
+namespace transmuter::pathgenerator
+{
+class MachineKinematicsIf;
+class MachinePathIf;
+}  // namespace transmuter::pathgenerator
 
 namespace transmuter::geometry
 {
@@ -18,10 +23,15 @@ struct MillingScene
 
     // Shared live state used by execution and visualization.
     std::shared_ptr<GeometryIf> workpiece;
-    std::shared_ptr<ToolPathIf> toolPath;
+    std::shared_ptr<const pathgenerator::MachinePathIf> machinePath;
 
     // The tool geometry is also an immutable input to the operation.
     std::shared_ptr<const GeometryIf> toolModel;
+    // Optional full cutter/shank envelope in the same tool frame; only toolModel removes stock.
+    std::shared_ptr<const GeometryIf> toolAssemblyModel;
+
+    // One physical machine is shared by every cutting stage and by playback.
+    std::shared_ptr<pathgenerator::MachineKinematicsIf> machineKinematics;
 };
 
 }  // namespace transmuter::geometry

@@ -58,6 +58,7 @@ class ProgramManager
             ERROR("Program '" + name + "' not found in catalog.");
         }
         auto program = m_catalog[name]();
+        INFO("Starting program '" << name << "'.");
         program->execute();
     }
 

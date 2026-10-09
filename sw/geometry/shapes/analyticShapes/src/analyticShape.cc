@@ -11,8 +11,8 @@ bool AnalyticShape::intersects(const GeometryIf& geometry, const Eigen::Affine3d
 {
     std::vector<Vertex> geometrySamples;
     geometry.copyVisualizationVertices(geometrySamples);
-    return std::any_of(geometrySamples.begin(), geometrySamples.end(), [&](const Vertex& sample)
-        { return isInside(geometryToLocalTransform * sample.pos); });
+    return std::any_of(geometrySamples.begin(), geometrySamples.end(),
+        [&](const Vertex& sample) { return isInside(geometryToLocalTransform * sample.pos); });
 }
 
 void AnalyticShape::combine(const GeometryIf&, const Eigen::Affine3d&)

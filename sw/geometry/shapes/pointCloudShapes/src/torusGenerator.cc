@@ -17,22 +17,22 @@ void validateTorus(double majorRadius, double tubeRadius, double density)
 {
     if (majorRadius <= tubeRadius || tubeRadius <= 0.0 || density <= 0.0)
     {
-        ERROR("Torus major radius must exceed its positive tube radius, and density must be positive.");
+        ERROR(
+            "Torus major radius must exceed its positive tube radius, and density must be "
+            "positive.");
     }
 }
 
 Eigen::Vector3d torusNormal(double majorAngle, double tubeAngle)
 {
     const double radialNormal = std::cos(tubeAngle);
-    return Eigen::Vector3d(
-        radialNormal * std::cos(majorAngle), radialNormal * std::sin(majorAngle), std::sin(tubeAngle));
+    return Eigen::Vector3d(radialNormal * std::cos(majorAngle), radialNormal * std::sin(majorAngle), std::sin(tubeAngle));
 }
 
 Eigen::Vector3d surfacePoint(double majorRadius, double tubeRadius, double majorAngle, double tubeAngle)
 {
     const double radialDistance = majorRadius + tubeRadius * std::cos(tubeAngle);
-    return Eigen::Vector3d(
-        radialDistance * std::cos(majorAngle), radialDistance * std::sin(majorAngle), tubeRadius * std::sin(tubeAngle));
+    return Eigen::Vector3d(radialDistance * std::cos(majorAngle), radialDistance * std::sin(majorAngle), tubeRadius * std::sin(tubeAngle));
 }
 
 void addSurfaceSamples(PointCloud& cloud, double majorRadius, double tubeRadius, double density)
@@ -45,8 +45,7 @@ void addSurfaceSamples(PointCloud& cloud, double majorRadius, double tubeRadius,
         for (int tubeIndex = 0; tubeIndex < tubeSteps; ++tubeIndex)
         {
             const double tubeAngle = 2.0 * std::numbers::pi * tubeIndex / tubeSteps;
-            cloud.append(Vertex{.pos = surfacePoint(majorRadius, tubeRadius, majorAngle, tubeAngle),
-                .normal = torusNormal(majorAngle, tubeAngle)});
+            cloud.append(Vertex(surfacePoint(majorRadius, tubeRadius, majorAngle, tubeAngle), torusNormal(majorAngle, tubeAngle)));
         }
     }
 }
@@ -69,8 +68,7 @@ void addSolidSamples(PointCloud& cloud, double majorRadius, double tubeRadius, d
                     continue;
                 }
                 const double sampledTubeRadius = tubeRadius * tubeRadiusIndex / tubeRadiusSteps;
-                cloud.append(Vertex{.pos = surfacePoint(majorRadius, sampledTubeRadius, majorAngle, tubeAngle),
-                    .normal = torusNormal(majorAngle, tubeAngle)});
+                cloud.append(Vertex(surfacePoint(majorRadius, sampledTubeRadius, majorAngle, tubeAngle), torusNormal(majorAngle, tubeAngle)));
             }
         }
     }

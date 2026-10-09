@@ -46,8 +46,7 @@ void addLateralSurface(PointCloud& cloud, double radius, double height, const Su
         for (int heightIndex = 0; heightIndex <= resolution.heightSteps; ++heightIndex)
         {
             const double z = -height * 0.5 + height * heightIndex / resolution.heightSteps;
-            cloud.append(Vertex{.pos = Eigen::Vector3d(radius * normal.x(), radius * normal.y(), z),
-                .normal = normal});
+            cloud.append(Vertex(Eigen::Vector3d(radius * normal.x(), radius * normal.y(), z), normal));
         }
     }
 }
@@ -60,10 +59,7 @@ void addEndFace(PointCloud& cloud, double radius, double z, const Eigen::Vector3
         for (int radialIndex = 0; radialIndex <= resolution.radialSteps; ++radialIndex)
         {
             const double radialDistance = radius * radialIndex / resolution.radialSteps;
-            cloud.append(Vertex{
-                .pos = Eigen::Vector3d(radialDistance * std::cos(angle), radialDistance * std::sin(angle), z),
-                .normal = normal,
-            });
+            cloud.append(Vertex(Eigen::Vector3d(radialDistance * std::cos(angle), radialDistance * std::sin(angle), z), normal));
         }
     }
 }
@@ -99,8 +95,7 @@ void addSolidSamples(PointCloud& cloud, double radius, double height, int diamet
                 const double y = -radius + 2.0 * radius * yIndex / diameterSteps;
                 if (x * x + y * y <= radius * radius)
                 {
-                    cloud.append(Vertex{.pos = Eigen::Vector3d(x, y, z),
-                        .normal = closestSurfaceNormal(x, y, z, radius, halfHeight)});
+                    cloud.append(Vertex(Eigen::Vector3d(x, y, z), closestSurfaceNormal(x, y, z, radius, halfHeight)));
                 }
             }
         }
@@ -128,8 +123,7 @@ std::shared_ptr<PointCloud> CylinderGenerator::generateSolid(double radius, doub
     validateCylinder(radius, height, density);
     const int diameterSteps = static_cast<int>(std::max(2.0, std::ceil(2.0 * radius / density)));
     const int heightSteps = static_cast<int>(std::max(1.0, std::ceil(height / density)));
-    const size_t capacity = static_cast<size_t>(diameterSteps + 1) * static_cast<size_t>(diameterSteps + 1) *
-                            static_cast<size_t>(heightSteps + 1);
+    const size_t capacity = static_cast<size_t>(diameterSteps + 1) * static_cast<size_t>(diameterSteps + 1) * static_cast<size_t>(heightSteps + 1);
     auto cloud = std::make_shared<PointCloud>(capacity);
     addSolidSamples(*cloud, radius, height, diameterSteps, heightSteps);
     cloud->finalize();

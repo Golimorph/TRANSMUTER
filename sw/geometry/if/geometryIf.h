@@ -52,6 +52,8 @@ class GeometryIf
     virtual GeometryBounds bounds() const = 0;
     virtual double maximumDistanceFromAxis(const Eigen::Vector3d& axisPoint, const Eigen::Vector3d& axisDirection) const = 0;
     virtual std::shared_ptr<GeometryIf> clone() const = 0;
+    /** Material samples for geometric simulation, independent of rendering storage. */
+    virtual std::vector<Eigen::Vector3d> sampleMaterial(double spacing) const;
     virtual void copyVisualizationVertices(std::vector<Vertex>& output) const = 0;
 };
 

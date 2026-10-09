@@ -155,8 +155,8 @@ bool PointCloud::intersects(const GeometryIf& geometry, const Eigen::Affine3d& g
 
     const Eigen::Affine3d pointCloudToGeometry = geometryToLocalTransform.inverse();
     std::lock_guard<std::mutex> lock(m_mutex);
-    return std::any_of(m_vertices.begin(), m_vertices.end(), [&](const Vertex& vertex)
-        { return geometry.isInside(pointCloudToGeometry * vertex.pos); });
+    return std::any_of(m_vertices.begin(), m_vertices.end(),
+        [&](const Vertex& vertex) { return geometry.isInside(pointCloudToGeometry * vertex.pos); });
 }
 
 void PointCloud::combine(const GeometryIf& geometry, const Eigen::Affine3d& geometryToLocalTransform)
@@ -276,6 +276,15 @@ double PointCloud::maximumDistanceFromAxis(const Eigen::Vector3d& axisPoint, con
         maximumDistanceSquared = std::max(maximumDistanceSquared, offset.squaredNorm() - axialDistanceSquared);
     }
     return std::sqrt(std::max(maximumDistanceSquared, 0.0));
+}
+
+std::vector<Eigen::Vector3d> PointCloud::sampleMaterial(double) const
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+    std::vector<Eigen::Vector3d> points;
+    points.reserve(m_vertices.size());
+    for (const auto& vertex : m_vertices) points.push_back(vertex.pos);
+    return points;
 }
 
 }  // namespace transmuter::geometry

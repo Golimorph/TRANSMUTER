@@ -1,11 +1,10 @@
 #include "geometryFactory.h"
 
-#include "cylinder.h"
 #include "boxGenerator.h"
+#include "cylinder.h"
 #include "cylinderGenerator.h"
 #include "dodecahedronGenerator.h"
 #include "torusGenerator.h"
-#include "toolPath.h"
 #include "trace.h"
 
 namespace transmuter::geometry
@@ -33,9 +32,7 @@ bool usesSurfacePointCloud(GeometryRepresentation representation)
 std::shared_ptr<GeometryIf> createPointCloudCylinder(double radius, double height, double sampleSpacing, GeometryRepresentation representation)
 {
     const bool surfaceSampling = usesSurfacePointCloud(representation);
-    INFO("Creating " << (surfaceSampling ? "surface" : "solid") << " point-cloud cylinder: radius "
-                      << radius << " mm, height " << height << " mm, sample spacing " << sampleSpacing
-                      << " mm, centered at the origin with its axis along +Z.");
+    INFO("Creating " << (surfaceSampling ? "surface" : "solid") << " point-cloud cylinder: radius " << radius << " mm, height " << height << " mm, sample spacing " << sampleSpacing << " mm, centered at the origin with its axis along +Z.");
     if (surfaceSampling)
     {
         return pointcloudshapes::CylinderGenerator::generate(radius, height, sampleSpacing);
@@ -49,9 +46,8 @@ std::shared_ptr<GeometryIf> GeometryFactory::createBox(double sizeX, double size
 {
     const Eigen::Vector3d dimensions(sizeX, sizeY, sizeZ);
     const bool surfaceSampling = usesSurfacePointCloud(representation);
-    INFO("Creating " << (surfaceSampling ? "surface" : "solid") << " box: " << dimensions.x()
-                      << " x " << dimensions.y() << " x " << dimensions.z() << " mm, sample spacing "
-                      << sampleSpacing << " mm, centered at the origin and aligned with the XYZ axes.");
+    INFO("Creating " << (surfaceSampling ? "surface" : "solid") << " box: " << dimensions.x() << " x "
+                     << dimensions.y() << " x " << dimensions.z() << " mm, sample spacing " << sampleSpacing << " mm, centered at the origin and aligned with the XYZ axes.");
     if (surfaceSampling)
     {
         return pointcloudshapes::BoxGenerator::generate(dimensions, sampleSpacing);
@@ -64,8 +60,7 @@ std::shared_ptr<GeometryIf> GeometryFactory::createCylinder(double radius, doubl
     switch (representation)
     {
         case GeometryRepresentation::ANALYTIC:
-            INFO("Creating analytic cylinder: radius " << radius << " mm, height " << height
-                                                        << " mm, with its base-center origin and axis along +Z.");
+            INFO("Creating analytic cylinder: radius " << radius << " mm, height " << height << " mm, with its base-center origin and axis along +Z.");
             return std::make_shared<analyticshapes::Cylinder>(radius, height);
         case GeometryRepresentation::POINT_CLOUD_SOLID:
         case GeometryRepresentation::POINT_CLOUD_SURFACE:
@@ -96,12 +91,6 @@ std::shared_ptr<GeometryIf> GeometryFactory::createTorus(double majorRadius, dou
         return pointcloudshapes::TorusGenerator::generate(majorRadius, tubeRadius, sampleSpacing);
     }
     return pointcloudshapes::TorusGenerator::generateSolid(majorRadius, tubeRadius, sampleSpacing);
-}
-
-std::shared_ptr<ToolPathIf> GeometryFactory::createToolPath()
-{
-    INFO("Creating an empty tool path.");
-    return std::make_shared<ToolPath>();
 }
 
 }  // namespace transmuter::geometry

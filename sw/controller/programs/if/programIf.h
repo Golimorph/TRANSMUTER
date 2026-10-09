@@ -1,6 +1,9 @@
 #ifndef TRANSMUTER_CONTROLLER_PROGRAMS_PROGRAM_IF_H
 #define TRANSMUTER_CONTROLLER_PROGRAMS_PROGRAM_IF_H
 #include <3rdParty/magic_enum.hpp>
+#include <atomic>
+
+#include "trace.h"
 
 namespace transmuter::controller::programs
 {
@@ -17,10 +20,10 @@ class ProgramIf
     {
         IDLE,
         RUNNING,
-        PAUSED,
+        ROUGH_CUTTING,
+        FINE_CUTTING,
         FINISHED,
         STOPPED,
-        FAILED,
     };
 
     virtual ~ProgramIf() = default;
@@ -28,23 +31,35 @@ class ProgramIf
 
     ProgramState getState() const
     {
-        return m_state;
+        return m_state.load();
     }
 
+    /** Request a stop; execute() records the STOPPED transition in its event loop. */
     void stop()
     {
-        setState(ProgramState::STOPPED);
+        m_stopRequested.store(true);
     }
 
    protected:
+    bool isStopRequested() const
+    {
+        return m_stopRequested.load();
+    }
+
+    std::atomic<bool>& stopSignal()
+    {
+        return m_stopRequested;
+    }
+
     void setState(ProgramState state)
     {
         INFO("Program entered state: " << magic_enum::enum_name(state).data());
-        m_state = state;
+        m_state.store(state);
     }
 
    private:
-    ProgramState m_state = ProgramState::IDLE;
+    std::atomic<ProgramState> m_state{ProgramState::IDLE};
+    std::atomic<bool> m_stopRequested{false};
 };
 }  // namespace transmuter::controller::programs
 #endif

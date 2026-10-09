@@ -86,6 +86,7 @@ class PointCloud : public GeometryIf
     void cut(const GeometryIf& cuttingGeometry, const Eigen::Affine3d& cuttingToThis = Eigen::Affine3d::Identity()) override;
     void cut(const GeometryIf& cuttingGeometry, const std::vector<Eigen::Affine3d>& cuttingToThis) override;
     GeometryBounds bounds() const override;
+    std::vector<Eigen::Vector3d> sampleMaterial(double spacing) const override;
     double maximumDistanceFromAxis(const Eigen::Vector3d& axisPoint, const Eigen::Vector3d& axisDirection) const override;
 
     void copyVisualizationVertices(std::vector<Vertex>& output) const override

@@ -40,11 +40,26 @@ DodecahedronVertices canonicalVertices()
     const double phi = std::numbers::phi;
     const double inversePhi = 1.0 / phi;
     return {{
-        {-1.0, -1.0, -1.0}, {-1.0, -1.0, 1.0}, {-1.0, 1.0, -1.0}, {-1.0, 1.0, 1.0},
-        {1.0, -1.0, -1.0}, {1.0, -1.0, 1.0}, {1.0, 1.0, -1.0}, {1.0, 1.0, 1.0},
-        {0.0, -inversePhi, -phi}, {0.0, -inversePhi, phi}, {0.0, inversePhi, -phi}, {0.0, inversePhi, phi},
-        {-inversePhi, -phi, 0.0}, {-inversePhi, phi, 0.0}, {inversePhi, -phi, 0.0}, {inversePhi, phi, 0.0},
-        {-phi, 0.0, -inversePhi}, {-phi, 0.0, inversePhi}, {phi, 0.0, -inversePhi}, {phi, 0.0, inversePhi},
+        {-1.0, -1.0, -1.0},
+        {-1.0, -1.0, 1.0},
+        {-1.0, 1.0, -1.0},
+        {-1.0, 1.0, 1.0},
+        {1.0, -1.0, -1.0},
+        {1.0, -1.0, 1.0},
+        {1.0, 1.0, -1.0},
+        {1.0, 1.0, 1.0},
+        {0.0, -inversePhi, -phi},
+        {0.0, -inversePhi, phi},
+        {0.0, inversePhi, -phi},
+        {0.0, inversePhi, phi},
+        {-inversePhi, -phi, 0.0},
+        {-inversePhi, phi, 0.0},
+        {inversePhi, -phi, 0.0},
+        {inversePhi, phi, 0.0},
+        {-phi, 0.0, -inversePhi},
+        {-phi, 0.0, inversePhi},
+        {phi, 0.0, -inversePhi},
+        {phi, 0.0, inversePhi},
     }};
 }
 
@@ -63,9 +78,18 @@ std::array<Eigen::Vector3d, 12> faceNormals()
 {
     const double phi = std::numbers::phi;
     std::array<Eigen::Vector3d, 12> normals{{
-        {0.0, phi, 1.0}, {0.0, phi, -1.0}, {0.0, -phi, 1.0}, {0.0, -phi, -1.0},
-        {1.0, 0.0, phi}, {1.0, 0.0, -phi}, {-1.0, 0.0, phi}, {-1.0, 0.0, -phi},
-        {phi, 1.0, 0.0}, {phi, -1.0, 0.0}, {-phi, 1.0, 0.0}, {-phi, -1.0, 0.0},
+        {0.0, phi, 1.0},
+        {0.0, phi, -1.0},
+        {0.0, -phi, 1.0},
+        {0.0, -phi, -1.0},
+        {1.0, 0.0, phi},
+        {1.0, 0.0, -phi},
+        {-1.0, 0.0, phi},
+        {-1.0, 0.0, -phi},
+        {phi, 1.0, 0.0},
+        {phi, -1.0, 0.0},
+        {-phi, 1.0, 0.0},
+        {-phi, -1.0, 0.0},
     }};
     for (auto& normal : normals)
     {
@@ -86,8 +110,8 @@ Eigen::Vector3d faceCenter(const std::vector<Eigen::Vector3d>& vertices)
 
 Face buildFace(const DodecahedronVertices& vertices, const Eigen::Vector3d& normal, double tolerance)
 {
-    const auto furthest = std::max_element(vertices.begin(), vertices.end(), [&](const auto& left, const auto& right)
-        { return normal.dot(left) < normal.dot(right); });
+    const auto furthest = std::max_element(vertices.begin(), vertices.end(),
+        [&](const auto& left, const auto& right) { return normal.dot(left) < normal.dot(right); });
     Face face{.vertices = {}, .normal = normal, .offset = normal.dot(*furthest)};
     std::copy_if(vertices.begin(), vertices.end(), std::back_inserter(face.vertices), [&](const auto& vertex)
         { return std::abs(face.normal.dot(vertex) - face.offset) <= tolerance; });
@@ -103,12 +127,14 @@ void orderFaceVertices(Face& face)
     const Eigen::Vector3d center = faceCenter(face.vertices);
     const Eigen::Vector3d xAxis = (face.vertices.front() - center).normalized();
     const Eigen::Vector3d yAxis = face.normal.cross(xAxis);
-    std::sort(face.vertices.begin(), face.vertices.end(), [&](const auto& left, const auto& right) {
-        const Eigen::Vector3d leftOffset = left - center;
-        const Eigen::Vector3d rightOffset = right - center;
-        return std::atan2(leftOffset.dot(yAxis), leftOffset.dot(xAxis)) <
-               std::atan2(rightOffset.dot(yAxis), rightOffset.dot(xAxis));
-    });
+    std::sort(face.vertices.begin(), face.vertices.end(),
+        [&](const auto& left, const auto& right)
+        {
+            const Eigen::Vector3d leftOffset = left - center;
+            const Eigen::Vector3d rightOffset = right - center;
+            return std::atan2(leftOffset.dot(yAxis), leftOffset.dot(xAxis)) <
+                   std::atan2(rightOffset.dot(yAxis), rightOffset.dot(xAxis));
+        });
 }
 
 std::vector<Face> dodecahedronFaces(double circumradius)
@@ -127,7 +153,8 @@ std::vector<Face> dodecahedronFaces(double circumradius)
 
 void addTriangleSamples(PointCloud& cloud, const Eigen::Vector3d& first, const Eigen::Vector3d& second, const Eigen::Vector3d& third, const Eigen::Vector3d& normal, double density)
 {
-    const double longestEdge = std::max({(second - first).norm(), (third - second).norm(), (first - third).norm()});
+    const double longestEdge = std::max({(second - first).norm(), (third - second).norm(),
+        (first - third).norm()});
     const int subdivisions = static_cast<int>(std::max(1.0, std::ceil(longestEdge / density)));
     for (int firstStep = 0; firstStep <= subdivisions; ++firstStep)
     {
@@ -135,8 +162,7 @@ void addTriangleSamples(PointCloud& cloud, const Eigen::Vector3d& first, const E
         {
             const double firstWeight = static_cast<double>(firstStep) / subdivisions;
             const double secondWeight = static_cast<double>(secondStep) / subdivisions;
-            cloud.append(Vertex{.pos = first + firstWeight * (second - first) + secondWeight * (third - first),
-                .normal = normal});
+            cloud.append(Vertex(first + firstWeight * (second - first) + secondWeight * (third - first), normal));
         }
     }
 }
@@ -154,8 +180,8 @@ void addFaceSamples(PointCloud& cloud, const Face& face, double density)
 
 bool isInside(const Eigen::Vector3d& point, const std::vector<Face>& faces)
 {
-    return std::all_of(faces.begin(), faces.end(), [&](const Face& face)
-        { return face.normal.dot(point) <= face.offset; });
+    return std::all_of(faces.begin(), faces.end(),
+        [&](const Face& face) { return face.normal.dot(point) <= face.offset; });
 }
 
 Eigen::Vector3d closestFaceNormal(const Eigen::Vector3d& point, const std::vector<Face>& faces)
@@ -180,7 +206,7 @@ void addSolidSamples(PointCloud& cloud, double circumradius, double density, con
                 const Eigen::Vector3d point(x, y, z);
                 if (isInside(point, faces))
                 {
-                    cloud.append(Vertex{.pos = point, .normal = closestFaceNormal(point, faces)});
+                    cloud.append(Vertex(point, closestFaceNormal(point, faces)));
                 }
             }
         }
