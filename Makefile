@@ -1,5 +1,6 @@
 # THE TRANSMUTER - Project Makefile
 CXX = g++
+SHELL := /bin/bash
 
 # Include paths for all modules
 INC = -I/usr/include/eigen3 \
@@ -60,18 +61,73 @@ DEPFLAGS = -MMD -MP
 # Executable name
 TARGET = transmuter
 
-# By default, build the executable, format the code, and update documentation, see format and docs targets below
-all: format docs $(TARGET)
+# By default, format the code, update documentation, and build the executable.
+all: format docs
+	@$(MAKE) --no-print-directory build-with-progress
+
+# Count the work Make actually schedules, then run it with one progress display.
+# Compiler and linker output is captured by their recipes and printed on failure.
+build-with-progress:
+	@echo "Building..."
+	@set -u; \
+	total=$$($(MAKE) --no-print-directory -n $(TARGET) | awk '/ -c / || / -o $(TARGET)( |$$)/ { count++ } END { print count + 0 }'); \
+	if [ "$$total" -eq 0 ]; then \
+		output=$$($(MAKE) --no-print-directory $(TARGET) 2>&1); status=$$?; \
+		if [ "$$status" -ne 0 ]; then printf '%s\n' "$$output"; fi; \
+		exit "$$status"; \
+	fi; \
+	progress_dir=$$(mktemp -d "$${TMPDIR:-/tmp}/transmuter-build-progress.XXXXXX"); \
+	progress_pipe="$$progress_dir/completed"; \
+	mkfifo "$$progress_pipe"; \
+	trap 'rm -rf "$$progress_dir"' EXIT; \
+	exec 9<>"$$progress_pipe"; \
+	draw_progress() { \
+		local percent=$$((completed * 100 / total)); \
+		local filled=$$((percent / 5)); \
+		local bar=$$(printf '%*s' "$$filled" '' | tr ' ' '#'); \
+		bar="$$bar$$(printf '%*s' "$$((20 - filled))" '' | tr ' ' '.')"; \
+		local spin='|/-\\'; \
+		local marker=$${spin:$$((spinner_index % 4)):1}; \
+		spinner_index=$$((spinner_index + 1)); \
+		if [ -t 1 ]; then \
+			printf '\r\033[K[%s] %3d%% [%s] %d/%d build steps' "$$marker" "$$percent" "$$bar" "$$completed" "$$total"; \
+		elif [ "$$completed" -ne "$$last_printed" ]; then \
+			printf 'Build progress: %3d%% [%s] %d/%d build steps\n' "$$percent" "$$bar" "$$completed" "$$total"; \
+			last_printed=$$completed; \
+		fi; \
+	}; \
+	progress_loop() { \
+		local completed=0 spinner_index=0 last_printed=-1 event; \
+		while true; do \
+			if IFS= read -r -t 0.1 -n 1 event; then \
+				if [ "$$event" = e ] || [ "$$event" = f ]; then break; fi; \
+				completed=$$((completed + 1)); \
+			fi; \
+			draw_progress; \
+		done; \
+		if [ "$$event" = e ]; then completed=$$total; draw_progress; fi; \
+		printf '\n'; \
+	}; \
+	progress_loop <&9 & progress_pid=$$!; \
+	output=$$(BUILD_PROGRESS_PIPE="$$progress_pipe" $(MAKE) --no-print-directory $(TARGET) 2>&1); status=$$?; \
+	if [ "$$status" -eq 0 ]; then printf e > "$$progress_pipe"; else printf f > "$$progress_pipe"; fi; \
+	wait "$$progress_pid"; \
+	if [ "$$status" -ne 0 ]; then printf '%s\n' "$$output"; exit "$$status"; fi; \
+	:
+
+.PHONY: build-with-progress
 
 # Link the executable
 $(TARGET): $(OBJS)
-	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS) $(LIBS)
+	@$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS) $(LIBS) || exit $$?; \
+	if [ -n "$${BUILD_PROGRESS_PIPE:-}" ]; then printf x > "$$BUILD_PROGRESS_PIPE"; fi
 
 # Compile source files
 $(OBJS): Makefile
 
 %.o: %.cc
-	$(CXX) $(CXXFLAGS) $(DEPFLAGS) -c $< -o $@
+	@$(CXX) $(CXXFLAGS) $(DEPFLAGS) -c $< -o $@ || exit $$?; \
+	if [ -n "$${BUILD_PROGRESS_PIPE:-}" ]; then printf x > "$$BUILD_PROGRESS_PIPE"; fi
 
 -include $(DEPS)
 
@@ -86,11 +142,12 @@ docs:
 	@chmod +x docs/generate_doc_tree.sh
 	@./docs/generate_doc_tree.sh
 
-run: $(TARGET)
-	./$(TARGET) quickTorusMilling
+run: format docs
+	@$(MAKE) --no-print-directory build-with-progress
+	@./$(TARGET) quickTorusMilling
 
 # Cleanup
 clean:
 	rm -f $(OBJS) $(DEPS) $(TARGET)
 
-.PHONY: all clean docs format
+.PHONY: all build-with-progress clean docs format run
