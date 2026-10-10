@@ -17,7 +17,7 @@ namespace transmuter::pathgenerator::algorithms
 class PathAlgorithmIf
 {
    public:
-    explicit PathAlgorithmIf(const geometry::MillingScene& millingScene);
+    PathAlgorithmIf(const geometry::MillingScene& millingScene, MachineKinematicsIf& machine);
 
     virtual ~PathAlgorithmIf() = default;
 
@@ -26,7 +26,7 @@ class PathAlgorithmIf
 
    protected:
     const geometry::MillingScene& scene() const;
-    const geometry::GeometryIf& stock() const;
+    const geometry::GeometryIf& operationStock() const;
     const geometry::GeometryIf& model() const;
     const geometry::GeometryIf& toolModel() const;
     geometry::GeometryIf& workpiece();
@@ -35,10 +35,11 @@ class PathAlgorithmIf
 
    private:
     geometry::MillingScene m_scene;
+    MachineKinematicsIf& m_machineKinematics;
     std::shared_ptr<geometry::GeometryIf> m_workpiece;
 };
 
-std::unique_ptr<PathAlgorithmIf> createPathAlgorithm(PathAlgorithmType type, const PathAlgorithmConfig& config, const geometry::MillingScene& scene);
+std::unique_ptr<PathAlgorithmIf> createPathAlgorithm(PathAlgorithmType type, const PathAlgorithmConfig& config, const geometry::MillingScene& scene, MachineKinematicsIf& machine);
 
 }  // namespace transmuter::pathgenerator::algorithms
 

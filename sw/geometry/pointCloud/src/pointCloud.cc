@@ -73,6 +73,44 @@ GeometryBounds transformedBounds(const GeometryBounds& bounds, const Eigen::Affi
     return result;
 }
 
+GeometryBounds boundsOfVertices(const std::vector<Vertex>& vertices)
+{
+    GeometryBounds bounds;
+    for (const auto& vertex : vertices)
+    {
+        bounds.min = bounds.isValid ? bounds.min.cwiseMin(vertex.pos) : vertex.pos;
+        bounds.max = bounds.isValid ? bounds.max.cwiseMax(vertex.pos) : vertex.pos;
+        bounds.isValid = true;
+    }
+    return bounds;
+}
+
+double averagePointSpacing(const GeometryBounds& bounds, size_t pointCount)
+{
+    if (pointCount == 0 || !bounds.isValid)
+    {
+        return 0.0;
+    }
+
+    double sampledMeasure = 1.0;
+    int sampledDimensions = 0;
+    const Eigen::Vector3d extents = bounds.max - bounds.min;
+    for (Eigen::Index axis = 0; axis < 3; ++axis)
+    {
+        const double extent = extents[axis];
+        if (extent > 0.0)
+        {
+            sampledMeasure *= extent;
+            ++sampledDimensions;
+        }
+    }
+    if (sampledDimensions == 0)
+    {
+        return 0.0;
+    }
+    return std::pow(sampledMeasure / static_cast<double>(pointCount), 1.0 / sampledDimensions);
+}
+
 void insertCuttingBounds(CuttingGrid& grid, const GeometryBounds& bounds, double cellSize, size_t transformIndex)
 {
     const GridKey minimum = gridKey(bounds.min, cellSize);
@@ -146,6 +184,29 @@ bool PointCloud::isInside(const Eigen::Vector3d& point) const
         [&](const Vertex& vertex) { return (vertex.pos - point).squaredNorm() <= spacingSquared; });
 }
 
+std::shared_ptr<GeometryIf> PointCloud::intersection(const GeometryIf& geometry, const Eigen::Affine3d& geometryToLocalTransform) const
+{
+    if (&geometry == this)
+    {
+        return clone();
+    }
+
+    const Eigen::Affine3d localToGeometry = geometryToLocalTransform.inverse();
+    std::vector<Vertex> vertices;
+    copyTo(vertices);
+    auto result = std::make_shared<PointCloud>();
+    result->m_vertices.reserve(vertices.size());
+    for (const auto& vertex : vertices)
+    {
+        if (geometry.isInside(localToGeometry * vertex.pos))
+        {
+            result->m_vertices.push_back(vertex);
+        }
+    }
+    result->finalize();
+    return result;
+}
+
 bool PointCloud::intersects(const GeometryIf& geometry, const Eigen::Affine3d& geometryToLocalTransform) const
 {
     if (&geometry == this)
@@ -161,16 +222,26 @@ bool PointCloud::intersects(const GeometryIf& geometry, const Eigen::Affine3d& g
 
 void PointCloud::combine(const GeometryIf& geometry, const Eigen::Affine3d& geometryToLocalTransform)
 {
-    std::vector<Vertex> addedVertices;
-    geometry.copyVisualizationVertices(addedVertices);
-    for (auto& vertex : addedVertices)
+    if (&geometry == this)
     {
-        vertex.pos = geometryToLocalTransform * vertex.pos;
-        vertex.normal = geometryToLocalTransform.linear() * vertex.normal;
-        if (!vertex.normal.isZero())
-        {
-            vertex.normal.normalize();
-        }
+        return;
+    }
+
+    double spacing;
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        spacing = combineSpacingLocked();
+    }
+    if (spacing <= 0.0)
+    {
+        ERROR("Point cloud bounds must span a dimension to determine combine spacing.");
+    }
+    const auto materialSamples = geometry.sampleMaterial(spacing);
+    std::vector<Vertex> addedVertices;
+    addedVertices.reserve(materialSamples.size());
+    for (const auto& point : materialSamples)
+    {
+        addedVertices.emplace_back(geometryToLocalTransform * point, Eigen::Vector3d::UnitZ());
     }
 
     std::lock_guard<std::mutex> lock(m_mutex);
@@ -186,6 +257,10 @@ void PointCloud::cut(const GeometryIf& cuttingGeometry, const Eigen::Affine3d& c
         return;
     }
 
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        combineSpacingLocked();
+    }
     const Eigen::Affine3d thisToCutting = cuttingToThis.inverse();
     eraseIf([&](const Vertex& vertex)
         { return cuttingGeometry.isInside(thisToCutting * vertex.pos); });
@@ -210,6 +285,10 @@ void PointCloud::cut(const GeometryIf& cuttingGeometry, const std::vector<Eigen:
     }
 
     const CuttingIndex cuttingIndex = buildCuttingIndex(cuttingBounds, cuttingToThis);
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        combineSpacingLocked();
+    }
     eraseIf([&](const Vertex& vertex)
         { return isInsideAnyCuttingGeometry(cuttingGeometry, cuttingIndex, vertex.pos); });
 }
@@ -236,6 +315,15 @@ double PointCloud::minimumPointSpacingLocked() const
 
     m_minimumPointSpacing = minimumSquared < std::numeric_limits<double>::max() ? std::sqrt(minimumSquared) : 0.0;
     return *m_minimumPointSpacing;
+}
+
+double PointCloud::combineSpacingLocked() const
+{
+    if (!m_combineSpacing)
+    {
+        m_combineSpacing = averagePointSpacing(boundsOfVertices(m_vertices), m_vertices.size());
+    }
+    return *m_combineSpacing;
 }
 
 GeometryBounds PointCloud::bounds() const

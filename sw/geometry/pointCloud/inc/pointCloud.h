@@ -45,6 +45,7 @@ class PointCloud : public GeometryIf
         std::lock_guard<std::mutex> lock(m_mutex);
         m_vertices.push_back(vertex);
         m_minimumPointSpacing.reset();
+        m_combineSpacing.reset();
     }
 
     void copyTo(std::vector<Vertex>& output) const
@@ -58,6 +59,7 @@ class PointCloud : public GeometryIf
         std::lock_guard<std::mutex> lock(m_mutex);
         m_vertices.clear();
         m_minimumPointSpacing.reset();
+        m_combineSpacing.reset();
     }
 
     /** @brief Remove every vertex accepted by predicate in one locked operation. */
@@ -77,10 +79,12 @@ class PointCloud : public GeometryIf
         std::lock_guard<std::mutex> lock(m_mutex);
         result->m_vertices = m_vertices;
         result->m_minimumPointSpacing = m_minimumPointSpacing;
+        result->m_combineSpacing = m_combineSpacing;
         return result;
     }
 
     bool isInside(const Eigen::Vector3d& point) const override;
+    std::shared_ptr<GeometryIf> intersection(const GeometryIf& geometry, const Eigen::Affine3d& geometryToLocalTransform = Eigen::Affine3d::Identity()) const override;
     bool intersects(const GeometryIf& geometry, const Eigen::Affine3d& geometryToLocalTransform = Eigen::Affine3d::Identity()) const override;
     void combine(const GeometryIf& geometry, const Eigen::Affine3d& geometryToLocalTransform = Eigen::Affine3d::Identity()) override;
     void cut(const GeometryIf& cuttingGeometry, const Eigen::Affine3d& cuttingToThis = Eigen::Affine3d::Identity()) override;
@@ -108,10 +112,12 @@ class PointCloud : public GeometryIf
 
    private:
     double minimumPointSpacingLocked() const;
+    double combineSpacingLocked() const;
 
     std::vector<Vertex> m_vertices;
     mutable std::mutex m_mutex;
     mutable std::optional<double> m_minimumPointSpacing;
+    mutable std::optional<double> m_combineSpacing;
 };
 
 }  // namespace transmuter::geometry

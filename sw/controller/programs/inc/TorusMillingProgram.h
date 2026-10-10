@@ -1,8 +1,8 @@
 #ifndef TRANSMUTER_CONTROLLER_PROGRAMS_TORUS_MILLING_H
 #define TRANSMUTER_CONTROLLER_PROGRAMS_TORUS_MILLING_H
 
+#include "MillingProgramContext.h"
 #include "PathAlgorithmConfig.h"
-#include "millingScene.h"
 #include "programIf.h"
 
 namespace transmuter::controller::programs
@@ -15,7 +15,7 @@ class TorusMillingProgram final : public ProgramIf
     void execute() override;
 
    private:
-    geometry::MillingScene createMillingScene() const;
+    MillingProgramContext createMillingContext() const;
     pathgenerator::PathAlgorithmConfig pathConfig() const;
 };
 

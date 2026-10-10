@@ -22,16 +22,21 @@ class PathAlgorithmIf;
 class PathGenerator
 {
    public:
-    PathGenerator(PathAlgorithmType algorithmType, PathAlgorithmConfig config, const geometry::MillingScene& millingScene, std::atomic<bool>& stopRequested);
+    PathGenerator(PathAlgorithmType algorithmType, PathAlgorithmConfig config, const geometry::MillingScene& millingScene, const MachineKinematicsIf& machineSetup, std::atomic<bool>& stopRequested);
     ~PathGenerator();
     void startGeneration();
     void stopGeneration();
     bool isGenerationFinished() const;
     PathGenerationResult getResult() const;
+    std::shared_ptr<const MachinePathIf> operationPath() const;
 
    private:
-    std::unique_ptr<transmuter::pathgenerator::algorithms::PathAlgorithmIf> m_algorithm;
+    PathAlgorithmType m_algorithmType;
+    PathAlgorithmConfig m_config;
+    geometry::MillingScene m_millingScene;
+    const MachineKinematicsIf& m_machineSetup;
     std::shared_ptr<MachineKinematicsIf> m_machineKinematics;
+    std::unique_ptr<transmuter::pathgenerator::algorithms::PathAlgorithmIf> m_algorithm;
     std::thread m_thread;
     std::atomic<bool>& m_stopRequested;
     PathGenerationResult m_result;

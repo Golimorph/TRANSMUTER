@@ -1,26 +1,15 @@
 # Programs
 
 Programs independently choose geometry, machine kinematics, algorithm, and path settings through
-public interfaces. The registered examples are `torusMilling`, `quickTorusMilling`, and
-`fiveAxisNormalMilling`; `make run` selects the quick example. The former `boxMilling` program is
+public interfaces. The registered examples are `torusMilling`, `interactiveTorusMilling`, and
+`fiveAxisNormalMilling`; `make run` selects the interactive example. The former `boxMilling` program is
 named `torusMilling` because it mills a torus from a dodecahedron.
 
-`QuickTorusMillingProgram::execute()` shows the stage sequence: start roughing, pass its resulting
-workpiece as fine cutting's local stock, then play back the combined path. The program keeps one `PathGenerator`
-slot and replaces it between stages. Each operation has its own live path, shown as it grows. When
-an operation finishes, the program appends it to the combined path. The machine checks the
-clearance transfer against the combined axis history before those transfer points are recorded. The transfer is
-checked against the stock remaining after roughing; no complete replay runs after generation.
-
-| Stage | Point spacing | Pass spacing | Layer spacing |
-| --- | --- | --- | --- |
-| Rough | 10 mm | 20 mm | 40 mm |
-| Fine | 5 mm | 10 mm | 10 mm |
-
-Both stages protect the same torus through `GeometryIf`. Fine cutting uses roughing's output as its
-stock. These are coarse preview settings, not a measured speedup or a guarantee of full torus
-coverage. Three-axis access cannot reach every torus undercut. The transfer's local check also
-cannot prove that the independently planned stages have identical preload history at their join.
+`InteractiveTorusMillingProgram::execute()` shows the interactive flow: wait for a user milling
+request, cut the intersection of the selected volume and current workpiece, then play back the
+combined path. The selection UI supplies the volume, algorithm, and path settings; the program
+combines that volume with the scene geometry and passes the resulting stock to the path generator.
+Each completed operation is appended to the program context's machine path.
 
 `TorusMillingProgram` runs one raster operation. `FiveAxisNormalMillingProgram` runs the experimental
 surface-peeling algorithm on the trunnion. Its 20 mm cutting region is enclosed by an 80 mm tool

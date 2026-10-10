@@ -119,8 +119,9 @@ The example torus uses 3 mm geometry samples.
 ## Module boundaries
 
 The example programs independently own dimensions, tools, machine choice, and stage settings.
-Each scene holds the selected machine, shared by roughing, finishing, and visualization. The
-program chooses mounting offsets and backlash axes through `MachineConfig`; the
+Each program composes a geometry `MillingScene` with a path-generation context that holds the
+selected machine and combined path, shared by generation and visualization. The program chooses
+mounting offsets and backlash axes through `MachineConfig`; the
 machine's `MachineMotionConfig` controls sampling and curve tolerance.
 `PathAlgorithmConfig` controls requested geometry. Geometry sweeps use the algorithm's point
 spacing; machine-motion checks use the machine's sampling spacing.

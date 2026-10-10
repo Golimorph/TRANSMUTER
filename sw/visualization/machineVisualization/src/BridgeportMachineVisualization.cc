@@ -32,12 +32,6 @@ BridgeportMachineVisualization::Frames BridgeportMachineVisualization::framesFor
     frames.tool = display.tool;
     return frames;
 }
-void BridgeportMachineVisualization::addPart(MachineDrawing& drawing, const std::shared_ptr<const MachineMesh>& mesh, const Eigen::Affine3d& frame, const Eigen::Vector3d& center, const Eigen::Vector3d& dimensions, const Eigen::Vector3f& color) const
-{
-    Eigen::Affine3d transform = frame * Eigen::Translation3d(center);
-    transform.scale(dimensions);
-    drawing.push_back({mesh, transform, color});
-}
 void BridgeportMachineVisualization::addFrame(MachineDrawing& drawing) const
 {
     const auto frame = Eigen::Affine3d::Identity();
@@ -72,5 +66,12 @@ void BridgeportMachineVisualization::addSpindle(MachineDrawing& drawing, const F
 {
     addPart(drawing, m_cylinder, frames.tool, {0, 0, m_config.toolLength + 25}, {22, 22, 50}, {0.68f, 0.7f, 0.72f});
     addPart(drawing, m_box, frames.tool, {0, 20, m_config.toolLength + 100}, {90, 100, 110}, {0.38f, 0.43f, 0.47f});
+}
+
+void BridgeportMachineVisualization::addPart(MachineDrawing& drawing, const std::shared_ptr<const MachineMesh>& mesh, const Eigen::Affine3d& frame, const Eigen::Vector3d& center, const Eigen::Vector3d& dimensions, const Eigen::Vector3f& color) const
+{
+    Eigen::Affine3d transform = frame * Eigen::Translation3d(center);
+    transform.scale(dimensions);
+    drawing.push_back({mesh, transform, color});
 }
 }  // namespace transmuter::visualization

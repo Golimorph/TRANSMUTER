@@ -10,8 +10,8 @@
 namespace transmuter::pathgenerator::algorithms
 {
 
-ThreeAxisRasterAlgorithm::ThreeAxisRasterAlgorithm(const transmuter::geometry::MillingScene& scene, PathAlgorithmConfig config)
-    : PathAlgorithmIf(scene), m_config(std::move(config))
+ThreeAxisRasterAlgorithm::ThreeAxisRasterAlgorithm(const transmuter::geometry::MillingScene& scene, MachineKinematicsIf& machine, PathAlgorithmConfig config)
+    : PathAlgorithmIf(scene, machine), m_config(std::move(config))
 {
     validateConfig(m_config);
     INFO("Raster algorithm configured: point spacing "
@@ -41,11 +41,14 @@ void ThreeAxisRasterAlgorithm::validateConfig(const PathAlgorithmConfig& config)
 
 PathGenerationResult ThreeAxisRasterAlgorithm::generate(const std::atomic<bool>& stopRequested)
 {
-    ThreeAxisRasterCuttingOperation cuttingOperation(stock(), model(), toolModel(), m_config.geometryTolerance, workpiece(), machine(), stopRequested);
+    ThreeAxisRasterCuttingOperation cuttingOperation(operationStock(), model(), toolModel(),
+        m_config.geometryTolerance, workpiece(), machine(), stopRequested);
 
     cutLayers(cuttingOperation, stopRequested);
     return PathGenerationResult{
         .machinePath = machine().path(),
+        .stock = scene().stock(),
+        .stockToWorkpiece = scene().stockToWorkpiece(),
         .workpiece = finishedWorkpiece(),
     };
 }

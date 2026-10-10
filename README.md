@@ -19,11 +19,11 @@ Compile:
     make
 
 Run 
-    ./transmuter quickTorusMilling
+    ./transmuter interactiveTorusMilling
 
-Examples: `torusMilling` runs the original single-stage example; `quickTorusMilling` runs coarse
-roughing followed by a finer finishing stage using coarse preview defaults; `fiveAxisNormalMilling` runs the experimental normal-surface
-planner. Machine kinematics checks proposed axis motion before each cut is recorded. See
+Examples: `torusMilling` runs the original single-stage example; `interactiveTorusMilling` lets you
+select a workpiece volume, algorithm, and path settings before generating; `fiveAxisNormalMilling`
+runs the experimental normal-surface planner. Machine kinematics checks proposed axis motion before each cut is recorded. See
 [the programs](sw/controller/programs/README.md) and [the machining model](docs/machining-model.md)
 for settings, force conventions, and current limits. Press **W** for workpiece coordinates or **M**
 for the animated machine view. Generated paths store X/Y/Z/A/B positions, from which the

@@ -87,7 +87,7 @@ NormalSurfaceCuttingOperation::CandidateResponse NormalSurfaceCuttingOperation::
     std::vector<SurfaceCutGeometry::Move> planned;
     std::vector<std::vector<Eigen::Affine3d>> sweeps;
     bool removedMaterial = false;
-    const auto& assembly = m_scene.toolAssemblyModel ? *m_scene.toolAssemblyModel : *m_scene.toolModel;
+    const auto& assembly = m_scene.toolAssemblyModel() ? *m_scene.toolAssemblyModel() : *m_scene.toolModel();
     const auto bounds = assembly.bounds();
     const double reach = bounds.min.cwiseAbs().cwiseMax(bounds.max.cwiseAbs()).norm();
     for (auto point : candidate)
@@ -99,7 +99,7 @@ NormalSurfaceCuttingOperation::CandidateResponse NormalSurfaceCuttingOperation::
             return CandidateResponse::NEXT_DIRECTION;
         }
         const bool contact = std::any_of(sweep.begin(), sweep.end(), [this, &trialWorkpiece](const auto& transform)
-            { return trialWorkpiece->intersects(*m_scene.toolModel, transform); });
+            { return trialWorkpiece->intersects(*m_scene.toolModel(), transform); });
         if (point.motionType == MotionType::RAPID && contact)
         {
             return CandidateResponse::NEXT_DIRECTION;
@@ -114,7 +114,7 @@ NormalSurfaceCuttingOperation::CandidateResponse NormalSurfaceCuttingOperation::
         planned.push_back(point);
         if (contact)
         {
-            trialWorkpiece->cut(*m_scene.toolModel, sweep);
+            trialWorkpiece->cut(*m_scene.toolModel(), sweep);
         }
         sweeps.push_back(std::move(sweep));
     }
@@ -139,21 +139,21 @@ NormalSurfaceCuttingOperation::CandidateResponse NormalSurfaceCuttingOperation::
 }
 bool NormalSurfaceCuttingOperation::geometryClear(const geometry::GeometryIf& workpiece, const std::vector<Eigen::Affine3d>& sweep) const
 {
-    const auto& assembly = m_scene.toolAssemblyModel ? *m_scene.toolAssemblyModel : *m_scene.toolModel;
+    const auto& assembly = m_scene.toolAssemblyModel() ? *m_scene.toolAssemblyModel() : *m_scene.toolModel();
     for (const auto& transform : sweep)
     {
-        if (m_scene.model->intersects(assembly, transform))
+        if (m_scene.model()->intersects(assembly, transform))
         {
             return false;
         }
-        if (!m_scene.toolAssemblyModel)
+        if (!m_scene.toolAssemblyModel())
         {
             continue;
         }
         const auto inverse = transform.inverse();
         for (const auto& point : MaterialEngagement::sample(workpiece, assembly, transform, m_config.surfaceSampleSpacing))
         {
-            if (!m_scene.toolModel->isInside(inverse * point))
+            if (!m_scene.toolModel()->isInside(inverse * point))
             {
                 return false;
             }
@@ -181,7 +181,7 @@ bool NormalSurfaceCuttingOperation::commitCandidate(const std::vector<SurfaceCut
         }
         if (planned[i].motionType == MotionType::CUTTING)
         {
-            m_workpiece.cut(*m_scene.toolModel, sweeps[i]);
+            m_workpiece.cut(*m_scene.toolModel(), sweeps[i]);
         }
     }
     ++m_accepted;

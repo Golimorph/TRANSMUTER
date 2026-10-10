@@ -4,28 +4,27 @@
 
 namespace transmuter::pathgenerator::algorithms
 {
-PathAlgorithmIf::PathAlgorithmIf(const geometry::MillingScene& millingScene) : m_scene(millingScene)
+PathAlgorithmIf::PathAlgorithmIf(const geometry::MillingScene& millingScene, MachineKinematicsIf& machine)
+    : m_scene(millingScene), m_machineKinematics(machine)
 {
-    if (!m_scene.stock || !m_scene.model || !m_scene.toolModel)
-        ERROR("Path generation requires stock, target and tool geometry.");
-    m_workpiece = m_scene.stock->clone();
+    m_workpiece = m_scene.workpiece()->clone();
     INFO("Path generation algorithm ready.");
 }
 const geometry::MillingScene& PathAlgorithmIf::scene() const
 {
     return m_scene;
 }
-const geometry::GeometryIf& PathAlgorithmIf::stock() const
+const geometry::GeometryIf& PathAlgorithmIf::operationStock() const
 {
-    return *m_scene.stock;
+    return *m_scene.workpiece();
 }
 const geometry::GeometryIf& PathAlgorithmIf::model() const
 {
-    return *m_scene.model;
+    return *m_scene.model();
 }
 const geometry::GeometryIf& PathAlgorithmIf::toolModel() const
 {
-    return *m_scene.toolModel;
+    return *m_scene.toolModel();
 }
 geometry::GeometryIf& PathAlgorithmIf::workpiece()
 {
@@ -37,6 +36,6 @@ std::shared_ptr<const geometry::GeometryIf> PathAlgorithmIf::finishedWorkpiece()
 }
 MachineKinematicsIf& PathAlgorithmIf::machine()
 {
-    return *m_scene.machineKinematics;
+    return m_machineKinematics;
 }
 }  // namespace transmuter::pathgenerator::algorithms

@@ -14,7 +14,7 @@ class ThreeAxisSpiralCuttingOperation;
 class ThreeAxisSpiralAlgorithm : public PathAlgorithmIf
 {
    public:
-    ThreeAxisSpiralAlgorithm(const transmuter::geometry::MillingScene& scene, PathAlgorithmConfig config);
+    ThreeAxisSpiralAlgorithm(const transmuter::geometry::MillingScene& scene, MachineKinematicsIf& machine, PathAlgorithmConfig config);
     ~ThreeAxisSpiralAlgorithm() override = default;
 
     PathGenerationResult generate(const std::atomic<bool>& stopRequested) override;

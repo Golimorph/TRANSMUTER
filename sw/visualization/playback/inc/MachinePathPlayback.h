@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "MachineKinematicsIf.h"
-#include "VisualizerConfig.h"
+#include "PathGenerationContext.h"
 #include "millingScene.h"
 
 namespace transmuter::visualization
@@ -14,26 +14,29 @@ namespace transmuter::visualization
 class MachinePathPlayback
 {
    public:
-    MachinePathPlayback(const geometry::MillingScene& scene, const VisualizerConfig& config);
-    void start();
-    void update();
-    bool hasStarted() const;
-    const pathgenerator::MachineMove& currentMove() const;
+    MachinePathPlayback(const geometry::MillingScene& scene, const pathgenerator::PathGenerationContext& pathGeneration, double playbackDurationSeconds);
 
    private:
+    friend class Visualizer;
+
+    void start();
+    void update();
     void calculatePlaybackTimes();
-    double calculatePlaybackProgress() const;
     void updateMove(double targetTravelTime);
     void removeTraversedMaterial(double targetTravelTime);
     void finishPlayback();
+
+    double calculatePlaybackProgress() const;
     pathgenerator::MachineMove interpolateMove(size_t upperIndex, double travelTime) const;
     double segmentTravel(const pathgenerator::MachineMove& from, const pathgenerator::MachineMove& to, double reach) const;
+    bool hasStarted() const;
+    const pathgenerator::MachineMove& currentMove() const;
     std::shared_ptr<geometry::GeometryIf> m_workpiece;
     std::shared_ptr<const pathgenerator::MachinePathIf> m_sourcePath;
     std::shared_ptr<const geometry::GeometryIf> m_tool;
     std::shared_ptr<const geometry::GeometryIf> m_assembly;
     std::shared_ptr<const pathgenerator::MachineKinematicsIf> m_machineKinematics;
-    VisualizerConfig m_config;
+    double m_playbackDurationSeconds;
 
     std::chrono::steady_clock::time_point m_startTime;
     std::vector<pathgenerator::MachineMove> m_moves;

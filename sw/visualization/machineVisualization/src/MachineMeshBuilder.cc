@@ -4,15 +4,6 @@
 #include <numbers>
 namespace transmuter::visualization
 {
-void MachineMeshBuilder::addTriangle(MachineMesh& mesh, const Eigen::Vector3f& a, const Eigen::Vector3f& b, const Eigen::Vector3f& c)
-{
-    const Eigen::Vector3f normal = (b - a).cross(c - a).normalized();
-    for (const auto& point : {a, b, c})
-    {
-        mesh.triangleIndices.push_back(static_cast<uint32_t>(mesh.vertices.size()));
-        mesh.vertices.push_back({point, normal});
-    }
-}
 std::shared_ptr<const MachineMesh> MachineMeshBuilder::box()
 {
     auto mesh = std::make_shared<MachineMesh>();
@@ -41,5 +32,15 @@ std::shared_ptr<const MachineMesh> MachineMeshBuilder::cylinder()
         addTriangle(*mesh, {0.0f, 0.0f, 0.5f}, highA, highB);
     }
     return mesh;
+}
+
+void MachineMeshBuilder::addTriangle(MachineMesh& mesh, const Eigen::Vector3f& a, const Eigen::Vector3f& b, const Eigen::Vector3f& c)
+{
+    const Eigen::Vector3f normal = (b - a).cross(c - a).normalized();
+    for (const auto& point : {a, b, c})
+    {
+        mesh.triangleIndices.push_back(static_cast<uint32_t>(mesh.vertices.size()));
+        mesh.vertices.push_back({point, normal});
+    }
 }
 }  // namespace transmuter::visualization

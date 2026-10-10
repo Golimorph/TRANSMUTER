@@ -22,7 +22,7 @@ one spatially indexed pass. Its approximate `isInside` query treats the cloud's 
 point-to-point spacing as the sampling tolerance.
 
 The `if` directory is the module's public boundary. It contains `GeometryIf`, shared
-value types, `MillingScene`, and `GeometryFactory`. The factory provides typed creation methods and
+value types, the geometry-only `MillingScene`, and `GeometryFactory`. The factory provides typed creation methods and
 returns interface pointers, so callers cannot depend on concrete representations.
 
 `PointCloud` is private implementation storage under `pointCloud`. Concrete
@@ -46,8 +46,9 @@ does not use renderer vertices or concrete point-cloud storage.
 and continuous A/B in radians. The generated path stores these axes in the path-generation module;
 workpiece-relative tool poses are derived from them through machine kinematics.
 
-`MillingScene` holds the program's machine and a read-only path for playback so generation and playback
-use the same physical setup. Geometry only stores these opaque pointers; it never evaluates machine motion.
+`MillingScene` holds only stock, target, workpiece and tool geometry. The path-generation module
+keeps the program-wide machine path and machine setup in `PathGenerationContext`; each operation
+gets fresh machine kinematics and its own path.
 `MillingScene::toolModel` is the cutting geometry. Optional `toolAssemblyModel` is the full tool/shank
 geometry in the same tool frame. It is used for collision checks and display, while only the cutter
 removes stock. Tool +Z points from tip toward shank. Generic pose helpers stay at this boundary;

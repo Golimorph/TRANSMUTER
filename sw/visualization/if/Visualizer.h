@@ -2,15 +2,16 @@
 #define TRANSMUTER_VISUALIZATION_VISUALIZER_H
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
 #include "MachineKinematicsIf.h"
 #include "MachinePathIf.h"
-#include "VisualizerConfig.h"
+#include "PathGenerationContext.h"
+#include "UserMillingRequest.h"
 #include "geometryIf.h"
 #include "millingScene.h"
-#include "viewCoordinates.h"
 
 namespace transmuter::visualization
 {
@@ -26,23 +27,38 @@ class MachineVisualizationIf;
 class Visualizer
 {
    public:
-    Visualizer(int w, int h, const std::string& title, const transmuter::geometry::MillingScene& millingScene, VisualizerConfig config = {});
+    struct Config
+    {
+        int windowWidth = 1024;
+        int windowHeight = 760;
+        std::string windowTitle = "Transmuter";
+        double toolPathPlaybackDurationSeconds = 60.0;
+    };
+
+    Visualizer(const transmuter::geometry::MillingScene& millingScene, const pathgenerator::PathGenerationContext& pathGeneration, Config config);
     ~Visualizer();
 
     /** Process window events and render one frame; false means the window was closed. */
     bool processEvents();
-
-    void startToolPathPlayback();
+    std::optional<UserMillingRequest> takeMillingRequest();
     /** Show the current operation while it is generated, before it joins the accepted path. */
     void setPreviewMachinePath(std::shared_ptr<const pathgenerator::MachinePathIf> path);
+    void startToolPathPlayback();
 
    private:
-    void validateInputs(const geometry::MillingScene& scene) const;
+    enum class ViewCoordinates
+    {
+        WORKPIECE,
+        MACHINE
+    };
+
     void renderFrame();
-    void refreshPathSnapshots();
     void drawScene();
+
+    void refreshPathSnapshots();
     pathgenerator::MachineMove displayedMachineMove() const;
     std::vector<geometry::Vertex> toolPoses(const std::vector<pathgenerator::MachineMove>& path) const;
+    void validateConfig() const;
 
     std::unique_ptr<Renderer> m_renderer;
     std::shared_ptr<const geometry::GeometryIf> m_stock;
@@ -53,7 +69,8 @@ class Visualizer
     std::vector<pathgenerator::MachineMove> m_combinedPathSnapshot;
     std::vector<pathgenerator::MachineMove> m_previewPathSnapshot;
     std::shared_ptr<const pathgenerator::MachinePathIf> m_previewMachinePath;
-    VisualizerConfig m_config;
+    Config m_config;
+    ViewCoordinates m_viewCoordinates = ViewCoordinates::WORKPIECE;
     std::unique_ptr<MachinePathPlayback> m_playback;
     std::unique_ptr<MachineVisualizationIf> m_machineVisualization;
 };

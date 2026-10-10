@@ -1,6 +1,6 @@
 #pragma once
+#include "MillingProgramContext.h"
 #include "PathAlgorithmConfig.h"
-#include "millingScene.h"
 #include "programIf.h"
 
 namespace transmuter::controller::programs
@@ -11,7 +11,7 @@ class FiveAxisNormalMillingProgram final : public ProgramIf
     void execute() override;
 
    private:
-    geometry::MillingScene createMillingScene() const;
+    MillingProgramContext createMillingContext() const;
     pathgenerator::PathAlgorithmConfig pathConfig() const;
 };
 }  // namespace transmuter::controller::programs

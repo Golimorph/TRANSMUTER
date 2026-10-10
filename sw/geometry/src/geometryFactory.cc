@@ -1,5 +1,6 @@
 #include "geometryFactory.h"
 
+#include "Box.h"
 #include "boxGenerator.h"
 #include "cylinder.h"
 #include "cylinderGenerator.h"
@@ -45,6 +46,11 @@ std::shared_ptr<GeometryIf> createPointCloudCylinder(double radius, double heigh
 std::shared_ptr<GeometryIf> GeometryFactory::createBox(double sizeX, double sizeY, double sizeZ, GeometryRepresentation representation, double sampleSpacing)
 {
     const Eigen::Vector3d dimensions(sizeX, sizeY, sizeZ);
+    if (representation == GeometryRepresentation::ANALYTIC)
+    {
+        INFO("Creating analytic box: " << sizeX << " x " << sizeY << " x " << sizeZ << " mm, centered at the origin.");
+        return std::make_shared<analyticshapes::Box>(dimensions);
+    }
     const bool surfaceSampling = usesSurfacePointCloud(representation);
     INFO("Creating " << (surfaceSampling ? "surface" : "solid") << " box: " << dimensions.x() << " x "
                      << dimensions.y() << " x " << dimensions.z() << " mm, sample spacing " << sampleSpacing << " mm, centered at the origin and aligned with the XYZ axes.");

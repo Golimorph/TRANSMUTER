@@ -7,7 +7,7 @@ namespace transmuter::pathgenerator::algorithms
 class FiveAxisNormalAlgorithm final : public PathAlgorithmIf
 {
    public:
-    FiveAxisNormalAlgorithm(const geometry::MillingScene& scene, PathAlgorithmConfig config);
+    FiveAxisNormalAlgorithm(const geometry::MillingScene& scene, MachineKinematicsIf& machine, PathAlgorithmConfig config);
     PathGenerationResult generate(const std::atomic<bool>& stopRequested) override;
 
    private:

@@ -14,7 +14,7 @@ class ThreeAxisRasterCuttingOperation;
 class ThreeAxisRasterAlgorithm : public PathAlgorithmIf
 {
    public:
-    ThreeAxisRasterAlgorithm(const transmuter::geometry::MillingScene& scene, PathAlgorithmConfig config);
+    ThreeAxisRasterAlgorithm(const transmuter::geometry::MillingScene& scene, MachineKinematicsIf& machine, PathAlgorithmConfig config);
     ~ThreeAxisRasterAlgorithm() override = default;
 
     PathGenerationResult generate(const std::atomic<bool>& stopRequested) override;

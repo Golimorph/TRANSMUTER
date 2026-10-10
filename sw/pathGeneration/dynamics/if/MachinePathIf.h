@@ -20,5 +20,17 @@ class MachinePathIf
     virtual MachineMove at(size_t index) const = 0;
     /** Final recorded move, or empty when the path has no moves. */
     virtual std::optional<MachineMove> last() const = 0;
+
+    /** Append a snapshot of another path's ordered machine moves. */
+    MachinePathIf& operator+=(const MachinePathIf& addition)
+    {
+        std::vector<MachineMove> moves;
+        addition.copyTo(moves);
+        for (const auto& move : moves)
+        {
+            append(move);
+        }
+        return *this;
+    }
 };
 }  // namespace transmuter::pathgenerator

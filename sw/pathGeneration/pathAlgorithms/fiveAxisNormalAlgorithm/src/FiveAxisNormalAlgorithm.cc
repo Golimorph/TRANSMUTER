@@ -8,8 +8,8 @@
 
 namespace transmuter::pathgenerator::algorithms
 {
-FiveAxisNormalAlgorithm::FiveAxisNormalAlgorithm(const geometry::MillingScene& scene, PathAlgorithmConfig config)
-    : PathAlgorithmIf(scene), m_config(std::move(config))
+FiveAxisNormalAlgorithm::FiveAxisNormalAlgorithm(const geometry::MillingScene& scene, MachineKinematicsIf& machine, PathAlgorithmConfig config)
+    : PathAlgorithmIf(scene, machine), m_config(std::move(config))
 {
     for (double spacing : {m_config.pointSpacing, m_config.passSpacing, m_config.layerSpacing,
              m_config.geometryTolerance, m_config.surfaceSampleSpacing})
@@ -35,6 +35,8 @@ PathGenerationResult FiveAxisNormalAlgorithm::generate(const std::atomic<bool>& 
     }
     return {
         .machinePath = machine().path(),
+        .stock = scene().stock(),
+        .stockToWorkpiece = scene().stockToWorkpiece(),
         .workpiece = finishedWorkpiece(),
         .generationNote = operation.generationNote(stop.load()),
     };

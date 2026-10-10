@@ -10,20 +10,18 @@
 namespace transmuter::visualization
 {
 
-Visualizer::Visualizer(int w, int h, const std::string& title, const transmuter::geometry::MillingScene& millingScene, VisualizerConfig config)
-    : m_renderer(std::make_unique<Renderer>(w, h, title)),
-      m_stock(millingScene.stock),
-      m_workpiece(millingScene.workpiece),
-      m_machinePath(millingScene.machinePath),
-      m_toolAssemblyModel(millingScene.toolAssemblyModel ? millingScene.toolAssemblyModel
-                                                         : millingScene.toolModel),
-      m_machineKinematics(millingScene.machineKinematics),
+Visualizer::Visualizer(const geometry::MillingScene& millingScene, const pathgenerator::PathGenerationContext& pathGeneration, Config config)
+    : m_renderer(std::make_unique<Renderer>(config.windowWidth, config.windowHeight, config.windowTitle)),
+      m_stock(millingScene.stock()),
+      m_workpiece(millingScene.workpiece()),
+      m_machinePath(pathGeneration.machinePath()),
+      m_toolAssemblyModel(millingScene.toolAssemblyModel() ? millingScene.toolAssemblyModel()
+                                                           : millingScene.toolModel()),
+      m_machineKinematics(pathGeneration.machineSetup()),
       m_config(config)
 {
-    validateInputs(millingScene);
-    m_playback = std::make_unique<MachinePathPlayback>(millingScene, m_config);
-
-    m_renderer->setViewCoordinates(m_config.initialCoordinates);
+    validateConfig();
+    m_playback = std::make_unique<MachinePathPlayback>(millingScene, pathGeneration, m_config.toolPathPlaybackDurationSeconds);
     m_machineVisualization = createMachineVisualization(m_machineKinematics,
         {m_stock->bounds().min.z(), m_toolAssemblyModel->bounds().max.z()});
 }
@@ -36,36 +34,24 @@ bool Visualizer::processEvents()
     {
         return false;
     }
+    m_viewCoordinates = m_renderer->machineViewSelected() ? ViewCoordinates::MACHINE : ViewCoordinates::WORKPIECE;
     renderFrame();
     return true;
 }
-void Visualizer::startToolPathPlayback()
+
+std::optional<UserMillingRequest> Visualizer::takeMillingRequest()
 {
-    m_playback->start();
+    return m_renderer->takeMillingRequest();
 }
+
 void Visualizer::setPreviewMachinePath(std::shared_ptr<const pathgenerator::MachinePathIf> path)
 {
     m_previewMachinePath = std::move(path);
 }
 
-void Visualizer::validateInputs(const geometry::MillingScene& scene) const
+void Visualizer::startToolPathPlayback()
 {
-    if (!m_machineKinematics)
-    {
-        ERROR("Visualizer needs the path generation kinematics model.");
-    }
-    if (!m_stock || !m_workpiece || !m_machinePath || !scene.toolModel)
-    {
-        ERROR("Visualization requires stock, workpiece, machine path and tool geometry.");
-    }
-    if (m_config.toolPathPlaybackDurationSeconds <= 0.0)
-    {
-        ERROR("Tool-path playback duration must be greater than zero.");
-    }
-    if (m_config.rapidPlaybackSpeedMultiplier <= 0.0)
-    {
-        ERROR("Rapid playback speed multiplier must be greater than zero.");
-    }
+    m_playback->start();
 }
 
 void Visualizer::renderFrame()
@@ -74,6 +60,44 @@ void Visualizer::renderFrame()
     m_renderer->beginFrame();
     drawScene();
     m_renderer->endFrame();
+}
+
+void Visualizer::drawScene()
+{
+    refreshPathSnapshots();
+    const auto move = displayedMachineMove();
+    const auto display = m_machineKinematics->displayPose(move.axes);
+    Eigen::Affine3d workpieceFrame = Eigen::Affine3d::Identity();
+    geometry::Vertex toolPose = display.toolInWorkpiece;
+    if (m_viewCoordinates == ViewCoordinates::MACHINE)
+    {
+        workpieceFrame = display.workpiece;
+        toolPose = {display.tool.translation(), display.tool.linear().col(2)};
+        const auto machineDrawing = m_machineVisualization->getMachineDrawing(move.axes);
+        m_renderer->drawMachine(machineDrawing);
+    }
+    m_renderer->drawStock(*m_stock, workpieceFrame);
+    m_renderer->drawWorkpiece(*m_workpiece, workpieceFrame);
+    m_renderer->drawUserSelection(workpieceFrame);
+    m_renderer->drawToolPath(toolPoses(m_combinedPathSnapshot), workpieceFrame);
+    m_renderer->drawToolPath(toolPoses(m_previewPathSnapshot), workpieceFrame);
+    if (m_playback->hasStarted() || !m_combinedPathSnapshot.empty() || !m_previewPathSnapshot.empty() || m_viewCoordinates == ViewCoordinates::MACHINE)
+    {
+        m_renderer->drawTool(*m_toolAssemblyModel, toolPose.pos, toolPose.normal);
+    }
+}
+
+void Visualizer::refreshPathSnapshots()
+{
+    m_machinePath->copyTo(m_combinedPathSnapshot);
+    if (m_previewMachinePath)
+    {
+        m_previewMachinePath->copyTo(m_previewPathSnapshot);
+    }
+    else
+    {
+        m_previewPathSnapshot.clear();
+    }
 }
 
 pathgenerator::MachineMove Visualizer::displayedMachineMove() const
@@ -92,6 +116,7 @@ pathgenerator::MachineMove Visualizer::displayedMachineMove() const
     }
     return {};
 }
+
 std::vector<geometry::Vertex> Visualizer::toolPoses(const std::vector<pathgenerator::MachineMove>& path) const
 {
     std::vector<geometry::Vertex> poses;
@@ -102,40 +127,12 @@ std::vector<geometry::Vertex> Visualizer::toolPoses(const std::vector<pathgenera
     }
     return poses;
 }
-void Visualizer::refreshPathSnapshots()
+
+void Visualizer::validateConfig() const
 {
-    m_machinePath->copyTo(m_combinedPathSnapshot);
-    if (m_previewMachinePath)
+    if (m_config.toolPathPlaybackDurationSeconds <= 0.0)
     {
-        m_previewMachinePath->copyTo(m_previewPathSnapshot);
-    }
-    else
-    {
-        m_previewPathSnapshot.clear();
-    }
-}
-void Visualizer::drawScene()
-{
-    refreshPathSnapshots();
-    const auto move = displayedMachineMove();
-    Eigen::Affine3d workpieceFrame = Eigen::Affine3d::Identity();
-    geometry::Vertex toolPose = m_machineKinematics->displayPose(move.axes).toolInWorkpiece;
-    if (m_renderer->viewCoordinates() == ViewCoordinates::MACHINE)
-    {
-        const auto display = m_machineKinematics->displayPose(move.axes);
-        workpieceFrame = display.workpiece;
-        toolPose = {display.tool.translation(), display.tool.linear().col(2)};
-        const auto machineDrawing = m_machineVisualization->getMachineDrawing(move.axes);
-        m_renderer->drawMachine(machineDrawing);
-    }
-    m_renderer->drawStock(*m_stock, workpieceFrame);
-    m_renderer->drawWorkpiece(*m_workpiece, workpieceFrame);
-    m_renderer->drawToolPath(toolPoses(m_combinedPathSnapshot), workpieceFrame);
-    m_renderer->drawToolPath(toolPoses(m_previewPathSnapshot), workpieceFrame);
-    if (m_playback->hasStarted() || !m_combinedPathSnapshot.empty() || !m_previewPathSnapshot.empty() ||
-        m_renderer->viewCoordinates() == ViewCoordinates::MACHINE)
-    {
-        m_renderer->drawTool(*m_toolAssemblyModel, toolPose.pos, toolPose.normal);
+        ERROR("Tool-path playback duration must be greater than zero.");
     }
 }
 

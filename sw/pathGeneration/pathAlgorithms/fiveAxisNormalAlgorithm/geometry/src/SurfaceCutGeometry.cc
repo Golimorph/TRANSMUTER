@@ -4,7 +4,6 @@
 #include <cmath>
 
 #include "toolPose.h"
-#include "trace.h"
 
 namespace transmuter::pathgenerator::algorithms
 {
@@ -19,12 +18,8 @@ geometry::Vertex SurfaceCutGeometry::initialPose() const
 }
 void SurfaceCutGeometry::configureClearance()
 {
-    const auto stockBox = m_scene.stock->bounds(), modelBox = m_scene.model->bounds(),
+    const auto stockBox = m_scene.workpiece()->bounds(), modelBox = m_scene.model()->bounds(),
                toolBox = assembly().bounds();
-    if (!stockBox.isValid || !modelBox.isValid || !toolBox.isValid)
-    {
-        ERROR("Normal-surface generation requires nonempty geometry.");
-    }
     const Eigen::Vector3d minimum = stockBox.min.cwiseMin(modelBox.min),
                           maximum = stockBox.max.cwiseMax(modelBox.max);
     m_center = (minimum + maximum) * 0.5;
@@ -33,7 +28,7 @@ void SurfaceCutGeometry::configureClearance()
 }
 const geometry::GeometryIf& SurfaceCutGeometry::assembly() const
 {
-    return m_scene.toolAssemblyModel ? *m_scene.toolAssemblyModel : *m_scene.toolModel;
+    return m_scene.toolAssemblyModel() ? *m_scene.toolAssemblyModel() : *m_scene.toolModel();
 }
 geometry::Vertex SurfaceCutGeometry::clearancePose(const geometry::Vertex& pose) const
 {
@@ -47,7 +42,7 @@ std::optional<std::vector<SurfaceCutGeometry::Move>> SurfaceCutGeometry::candida
 {
     const double length = m_config.passSpacing;
     const Eigen::Vector3d center = surface.pos -
-                                   axis * (m_config.layerSpacing + m_scene.toolModel->bounds().min.z());
+                                   axis * (m_config.layerSpacing + m_scene.toolModel()->bounds().min.z());
     const geometry::Vertex start{center - tangent * length * 0.5, axis};
     const geometry::Vertex finish{center + tangent * length * 0.5, axis};
     std::vector<Move> path;
@@ -80,7 +75,7 @@ bool SurfaceCutGeometry::cuttingEndpointsClear(const std::vector<Move>& path) co
     // Reject gouging before validating the more expensive access motion.
     for (size_t i = path.size() - 3; i < path.size() - 1; ++i)
     {
-        if (m_scene.model->intersects(assembly(), geometry::toolTransform(path[i].pose)))
+        if (m_scene.model()->intersects(assembly(), geometry::toolTransform(path[i].pose)))
         {
             return false;
         }

@@ -12,10 +12,13 @@ namespace transmuter::controller::programs
 {
 void FiveAxisNormalMillingProgram::execute()
 {
-    const auto scene = createMillingScene();
+    auto context = createMillingContext();
     const auto config = pathConfig();
-    visualization::Visualizer visualizer(1024, 760, "Transmuter: five-axis normal milling", scene);
-    pathgenerator::PathGenerator pathGenerator(pathgenerator::PathAlgorithmType::FIVE_AXIS_NORMAL, config, scene, stopSignal());
+    visualization::Visualizer::Config viewConfig;
+    viewConfig.windowTitle = "Transmuter: five-axis normal milling";
+    visualization::Visualizer visualizer(context.geometryContext, context.pathContext, viewConfig);
+    pathgenerator::PathGenerator pathGenerator(pathgenerator::PathAlgorithmType::FIVE_AXIS_NORMAL, config,
+        context.geometryContext, *context.pathContext.machineSetup(), stopSignal());
     while (true)
     {
         if (!visualizer.processEvents())
@@ -31,6 +34,7 @@ void FiveAxisNormalMillingProgram::execute()
         {
             case ProgramState::IDLE:
                 pathGenerator.startGeneration();
+                visualizer.setPreviewMachinePath(pathGenerator.operationPath());
                 setState(ProgramState::RUNNING);
                 break;
             case ProgramState::RUNNING:
@@ -44,6 +48,8 @@ void FiveAxisNormalMillingProgram::execute()
                 {
                     INFO(result.generationNote);
                 }
+                *context.pathContext.machinePath() += *result.machinePath;
+                visualizer.setPreviewMachinePath({});
                 visualizer.startToolPathPlayback();
                 setState(ProgramState::FINISHED);
                 break;
@@ -54,7 +60,7 @@ void FiveAxisNormalMillingProgram::execute()
     }
     pathGenerator.stopGeneration();
 }
-geometry::MillingScene FiveAxisNormalMillingProgram::createMillingScene() const
+MillingProgramContext FiveAxisNormalMillingProgram::createMillingContext() const
 {
     const auto stock = geometry::GeometryFactory::createDodecahedron(100.0, geometry::GeometryRepresentation::POINT_CLOUD_SOLID, 3.0);
     const auto assembly = geometry::GeometryFactory::createCylinder(10.0, 80.0, geometry::GeometryRepresentation::ANALYTIC);
@@ -66,15 +72,9 @@ geometry::MillingScene FiveAxisNormalMillingProgram::createMillingScene() const
     machineConfig.hasBacklash = {true, true, false, false, false};
     machineConfig.takeupDistance.fill(0.0);
     auto machine = pathgenerator::createTrunnionFiveAxisMachine(machineConfig);
-    return {
-        .stock = stock,
-        .model = geometry::GeometryFactory::createTorus(50.0, 20.0, geometry::GeometryRepresentation::POINT_CLOUD_SOLID, 3.0),
-        .workpiece = stock->clone(),
-        .machinePath = machine->path(),
-        .toolModel = geometry::GeometryFactory::createCylinder(10.0, 20.0, geometry::GeometryRepresentation::ANALYTIC),
-        .toolAssemblyModel = assembly,
-        .machineKinematics = machine,
-    };
+    const auto model = geometry::GeometryFactory::createTorus(50.0, 20.0, geometry::GeometryRepresentation::POINT_CLOUD_SOLID, 3.0);
+    const auto tool = geometry::GeometryFactory::createCylinder(10.0, 20.0, geometry::GeometryRepresentation::ANALYTIC);
+    return {geometry::MillingScene(stock, model, stock->clone(), tool, assembly), pathgenerator::PathGenerationContext(pathgenerator::createMachinePath(), machine)};
 }
 pathgenerator::PathAlgorithmConfig FiveAxisNormalMillingProgram::pathConfig() const
 {

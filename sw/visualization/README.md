@@ -1,7 +1,7 @@
 # Visualization
 
-`if/Visualizer.h` exposes scene presentation and playback controls; `VisualizerConfig.h` contains the
-settings. `Visualizer` coordinates the displayed frame and delegates playback to the private
+Programs interact with visualization through `if/Visualizer.h`; `Visualizer::Config` contains its
+window and playback settings. `Visualizer` coordinates the displayed frame and delegates playback to the private
 `playback/MachinePathPlayback` component. That component owns timing, pose interpolation and displayed
 material removal, and contains no window or OpenGL calls. `inc/Renderer.h` and `src/Renderer.cc` own
 window input, camera control and OpenGL drawing. Solids are consumed through `GeometryIf`, paths through `MachinePathIf`, kinematics through
@@ -13,8 +13,9 @@ therefore follow the program's normal event flow without a separate render worke
 
 Press **W** to select workpiece coordinates or **M** to select machine coordinates. The window title
 shows the active frame and the controls. Horizontal mouse drag rotates about scene Z (azimuth/phi); vertical drag changes the polar
-angle (theta), with downward drag decreasing theta and upward drag increasing it. Theta is clamped near the poles to avoid flipping, and the wheel zooms. The initial
-frame is configurable through `VisualizerConfig::initialCoordinates`.
+angle (theta), with downward drag decreasing theta and upward drag increasing it. Theta is clamped
+near the poles to avoid flipping, and the wheel zooms. The visualizer starts in workpiece view and
+keeps the active view mode as private state.
 
 In workpiece view the stock stays fixed and the tool moves around it. In machine view the X/Y table,
 A/B trunnion, workpiece and spindle Z move according to the stored machine trajectory. The path overlay

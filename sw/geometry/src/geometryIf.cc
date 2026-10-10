@@ -6,6 +6,11 @@
 
 namespace transmuter::geometry
 {
+std::shared_ptr<GeometryIf> GeometryIf::intersection(const GeometryIf&, const Eigen::Affine3d&) const
+{
+    ERROR("This geometry representation does not support returning an intersection.");
+}
+
 std::vector<Eigen::Vector3d> GeometryIf::sampleMaterial(double spacing) const
 {
     if (!std::isfinite(spacing) || spacing <= 0.0)

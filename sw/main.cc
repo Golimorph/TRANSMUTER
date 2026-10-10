@@ -6,7 +6,7 @@ int main(int argc, char* argv[])
     if (argc < 2)
     {
         ERROR(
-            "Usage: ./transmuter <program_name>\nPrograms: torusMilling, quickTorusMilling, "
+            "Usage: ./transmuter <program_name>\nPrograms: torusMilling, interactiveTorusMilling, "
             "fiveAxisNormalMilling");
     }
     transmuter::controller::runProgram(argv[1]);

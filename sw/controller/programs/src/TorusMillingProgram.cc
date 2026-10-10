@@ -12,11 +12,13 @@ namespace transmuter::controller::programs
 void TorusMillingProgram::execute()
 {
     INFO("Starting execution.");
-    const auto millingScene = createMillingScene();
+    auto context = createMillingContext();
     const auto config = pathConfig();
-    visualization::VisualizerConfig viewConfig{.toolPathPlaybackDurationSeconds = 60.0};
-    visualization::Visualizer visualizer(1024, 760, "Transmuter: torus milling", millingScene, viewConfig);
-    pathgenerator::PathGenerator pathGenerator(pathgenerator::PathAlgorithmType::THREE_AXIS_RASTER, config, millingScene, stopSignal());
+    visualization::Visualizer::Config viewConfig;
+    viewConfig.windowTitle = "Transmuter: torus milling";
+    visualization::Visualizer visualizer(context.geometryContext, context.pathContext, viewConfig);
+    pathgenerator::PathGenerator pathGenerator(pathgenerator::PathAlgorithmType::THREE_AXIS_RASTER, config,
+        context.geometryContext, *context.pathContext.machineSetup(), stopSignal());
     while (true)
     {
         if (!visualizer.processEvents())
@@ -33,6 +35,7 @@ void TorusMillingProgram::execute()
             case ProgramState::IDLE:
                 INFO("Starting path generation.");
                 pathGenerator.startGeneration();
+                visualizer.setPreviewMachinePath(pathGenerator.operationPath());
                 setState(ProgramState::RUNNING);
                 break;
             case ProgramState::RUNNING:
@@ -41,6 +44,9 @@ void TorusMillingProgram::execute()
                 {
                     break;
                 }
+                const auto result = pathGenerator.getResult();
+                *context.pathContext.machinePath() += *result.machinePath;
+                visualizer.setPreviewMachinePath({});
                 visualizer.startToolPathPlayback();
                 setState(ProgramState::FINISHED);
                 break;
@@ -52,7 +58,7 @@ void TorusMillingProgram::execute()
     pathGenerator.stopGeneration();
 }
 
-geometry::MillingScene TorusMillingProgram::createMillingScene() const
+MillingProgramContext TorusMillingProgram::createMillingContext() const
 {
     INFO("Creating milling scene.");
 
@@ -67,14 +73,7 @@ geometry::MillingScene TorusMillingProgram::createMillingScene() const
     machineConfig.takeupDistance.fill(0.0);
 
     auto machine = pathgenerator::createFixedThreeAxisMachine(machineConfig);
-    return transmuter::geometry::MillingScene{
-        .stock = stock,
-        .model = model,
-        .workpiece = workpiece,
-        .machinePath = machine->path(),
-        .toolModel = toolModel,
-        .machineKinematics = machine,
-    };
+    return {geometry::MillingScene(stock, model, workpiece, toolModel), pathgenerator::PathGenerationContext(pathgenerator::createMachinePath(), machine)};
 }
 
 pathgenerator::PathAlgorithmConfig TorusMillingProgram::pathConfig() const

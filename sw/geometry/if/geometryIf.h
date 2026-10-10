@@ -32,6 +32,9 @@ class GeometryIf
     /** Return whether a point expressed in this geometry's local coordinates is inside it. */
     virtual bool isInside(const Eigen::Vector3d& point) const = 0;
 
+    /** Return this geometry clipped by another geometry, in this geometry's representation. */
+    virtual std::shared_ptr<GeometryIf> intersection(const GeometryIf& geometry, const Eigen::Affine3d& geometryToLocalTransform = Eigen::Affine3d::Identity()) const;
+
     /** Return whether geometry at the supplied pose intersects this object. */
     virtual bool intersects(const GeometryIf& geometry, const Eigen::Affine3d& geometryToLocalTransform = Eigen::Affine3d::Identity()) const = 0;
 

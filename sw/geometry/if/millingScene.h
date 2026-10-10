@@ -1,38 +1,38 @@
 #ifndef TRANSMUTER_GEOMETRY_MILLING_SCENE_H
 #define TRANSMUTER_GEOMETRY_MILLING_SCENE_H
 
+#include <Eigen/Geometry>
 #include <memory>
 
 #include "geometryIf.h"
 
-namespace transmuter::pathgenerator
-{
-class MachineKinematicsIf;
-class MachinePathIf;
-}  // namespace transmuter::pathgenerator
-
 namespace transmuter::geometry
 {
-
-struct MillingScene
+class MillingScene
 {
-    // Immutable shape inputs for this scene. A local stock may be an extracted, already-machined
-    // section of a larger workpiece.
-    std::shared_ptr<const GeometryIf> stock;
-    std::shared_ptr<const GeometryIf> model;
+   public:
+    MillingScene(std::shared_ptr<const GeometryIf> stock, std::shared_ptr<const GeometryIf> model, std::shared_ptr<GeometryIf> workpiece, std::shared_ptr<const GeometryIf> toolModel, std::shared_ptr<const GeometryIf> toolAssemblyModel = {}, Eigen::Affine3d stockToWorkpiece = Eigen::Affine3d::Identity());
 
-    // Shared live state used by execution and visualization.
-    std::shared_ptr<GeometryIf> workpiece;
-    std::shared_ptr<const pathgenerator::MachinePathIf> machinePath;
+    const std::shared_ptr<const GeometryIf>& stock() const;
+    const std::shared_ptr<const GeometryIf>& model() const;
+    const std::shared_ptr<GeometryIf>& workpiece() const;
+    const std::shared_ptr<const GeometryIf>& toolModel() const;
+    const std::shared_ptr<const GeometryIf>& toolAssemblyModel() const;
+    const Eigen::Affine3d& stockToWorkpiece() const;
 
-    // The tool geometry is also an immutable input to the operation.
-    std::shared_ptr<const GeometryIf> toolModel;
-    // Optional full cutter/shank envelope in the same tool frame; only toolModel removes stock.
-    std::shared_ptr<const GeometryIf> toolAssemblyModel;
+    void setStock(std::shared_ptr<const GeometryIf> stock, const Eigen::Affine3d& stockToWorkpiece = Eigen::Affine3d::Identity());
+    void setWorkpiece(std::shared_ptr<GeometryIf> workpiece);
 
-    // One physical machine is shared by every cutting stage and by playback.
-    std::shared_ptr<pathgenerator::MachineKinematicsIf> machineKinematics;
+   private:
+    void validate() const;
+
+    std::shared_ptr<const GeometryIf> m_stock;
+    std::shared_ptr<const GeometryIf> m_model;
+    std::shared_ptr<GeometryIf> m_workpiece;
+    std::shared_ptr<const GeometryIf> m_toolModel;
+    std::shared_ptr<const GeometryIf> m_toolAssemblyModel;
+    Eigen::Affine3d m_stockToWorkpiece;
 };
-
 }  // namespace transmuter::geometry
+
 #endif  // TRANSMUTER_GEOMETRY_MILLING_SCENE_H

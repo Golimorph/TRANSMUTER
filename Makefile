@@ -144,7 +144,7 @@ docs:
 
 run: format docs
 	@$(MAKE) --no-print-directory build-with-progress
-	@./$(TARGET) quickTorusMilling
+	@./$(TARGET) interactiveTorusMilling
 
 # Cleanup
 clean:

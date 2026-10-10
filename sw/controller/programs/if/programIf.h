@@ -20,8 +20,9 @@ class ProgramIf
     {
         IDLE,
         RUNNING,
-        ROUGH_CUTTING,
-        FINE_CUTTING,
+        USER_INPUT,
+        CUT_USER_SELECTION,
+        PLAY,
         FINISHED,
         STOPPED,
     };
